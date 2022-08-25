@@ -28,7 +28,8 @@ namespace SlideCat
         private PowerPoint.Application _prev_application;
         private PowerPoint.Presentation _prev_presentation;
 
-        private int _focusCounter = 0;
+        private int _intervalCounter = 0;
+        private String _slideNotes = String.Empty;
 
 
         public bool IsPlaying { get { return _isPlaying; } }
@@ -50,9 +51,12 @@ namespace SlideCat
 
         public void playPresentation()
         {
-
+            this._isPlaying = false;
+            
             _prev_application = _current_application;
             _prev_presentation = _current_presentation;
+
+            this._currentSlideIndex = 0;
 
             _currentMediaItem = _nextMediaItem;
             _currentMediaItem.reload();
@@ -63,19 +67,17 @@ namespace SlideCat
             settings.ShowType = (PowerPoint.PpSlideShowType)1;
             settings.ShowPresenterView = MsoTriState.msoFalse;
             PowerPoint.SlideShowWindow sw = settings.Run();
-            //sw.View.AcceleratorsEnabled = MsoTriState.msoFalse;
 
             this._current_presentation.SlideShowWindow.View.GotoSlide(this._currentSlideIndex + 1);
             this._current_presentation.SlideShowWindow.View.FirstAnimationIsAutomatic();
 
-
-            if (this._isPlaying)
+            if (this._prev_presentation != null)
             {
                 this._stopPresentation(_prev_presentation);
             }
 
+
             this._isPlaying = true;
-            
         }
 
         public void stopPresentation()
@@ -98,6 +100,7 @@ namespace SlideCat
             }
         }
 
+        
         public void nextSlide()
         {
             this._current_presentation.SlideShowWindow.View.Next();
@@ -110,9 +113,24 @@ namespace SlideCat
             this._focus();
         }
 
-        public bool lastSlide()
+        public void goToSlideIndex(int _index)
         {
-            return this._currentMediaItem.nrSlides == this.slide() ? true : false;
+            this._current_presentation.SlideShowWindow.View.GotoSlide(_index + 1);
+        }
+
+        public bool exitSlide()
+        {
+            if(this._isPlaying && this._validPresentation())
+            {
+                try
+                {
+                    int tmp = this._current_presentation.SlideShowWindow.View.Slide.SlideIndex;
+                }catch
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public bool firstSlide()
@@ -120,50 +138,108 @@ namespace SlideCat
             return false;
         }
 
-        public int slide()
+        public int getSlideIndex()
         {
-            if (this._isPlaying) {
-                if (this._currentMediaItem.type == MediaType.powerpoint)
-                {
-                    try
-                    {
-                        return this._current_presentation.SlideShowWindow.View.Slide.SlideIndex - 1;
-                    }
-                    catch (Exception ex1)
-                    {
-                        Console.WriteLine("LOG - Presentation.cs - slide() - catch ex1");
-                        try
-                        {
-                            return this._current_presentation.Slides.Count;
-                        } catch (Exception ex2)
-                        {
-                            Console.WriteLine("LOG - Presentation.cs - slide() - catch ex2");
-                            Console.WriteLine(ex2.Message);
-                            return 0;
-                        }
-                    }
-                }
-            }
-            return 0;
+            return _currentSlideIndex;
+        }        
+
+        public String getSlideNotes()
+        {
+            return this._slideNotes;
         }
 
         public void focus()
         {
-            this._focusCounter++;
-            if(this._focusCounter >= 50)
+            this._focus();
+        }
+
+        public bool runInterval()
+        {
+            this._intervalCounter++;
+            this._setSlideIndex();
+            if(this._intervalCounter >= 50)
             {
+                this._intervalCounter = 0;
                 this._focus();
+                this._getSlideNotes();
+                return true;
             }
+            return false;
         }
 
         private void _focus()
         {
-            if(this._isPlaying)
+            if(this._isPlaying && this._validPresentation())
             {
-                this._focusCounter = 0;
                 this._current_presentation.SlideShowWindow.Activate();
             }
-            
         }
+
+        private void _getSlideNotes()
+        {
+            String notes = String.Empty;
+            if (this.IsPlaying && !this.exitSlide() && this._validPresentation())
+            {
+                PowerPoint.Slide slide = this._current_presentation.Slides[_currentSlideIndex + 1];
+                if (slide.HasNotesPage == MsoTriState.msoTrue)
+                {
+                    int length = 0;
+                    foreach (PowerPoint.Shape shape in slide.NotesPage.Shapes)
+                    {
+                        if (shape.Type == MsoShapeType.msoPlaceholder)
+                        {
+                            var tf = shape.TextFrame;
+                            try
+                            {
+                                var range = tf.TextRange;
+                                Console.WriteLine(range.Text);
+                                if (range.Length > length)
+                                {
+                                    length = range.Length;
+                                    notes = range.Text;
+                                }
+                            }
+                            catch (Exception ex)
+                            { }
+                        }
+                    }
+                }
+            }
+            this._slideNotes = notes;
+        }
+        private void _setSlideIndex()
+        {
+            this._currentSlideIndex = 0;
+            if (this._isPlaying && this._validPresentation())
+            {
+                if (this._currentMediaItem.type == MediaType.powerpoint)
+                {
+                    try
+                    {
+                        this._currentSlideIndex = this._current_presentation.SlideShowWindow.View.Slide.SlideIndex - 1;
+                    } catch
+                    { }
+                    
+                }
+            }
+        }
+
+        private bool _validPresentation()
+        {
+            if (this._currentMediaItem.type != MediaType.powerpoint)
+            {
+                return true;
+            }
+            try
+            {
+                int tmp = this._current_presentation.Slides.Count;
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
+        }
+
     }
 }
