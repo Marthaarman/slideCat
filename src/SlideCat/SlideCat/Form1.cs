@@ -44,7 +44,7 @@ namespace SlideCat
             BackgroundWorker worker = sender as BackgroundWorker;
             while (true)
             {
-                worker.ReportProgress(_presentation.slide());
+                worker.ReportProgress(_presentation.getSlideIndex());
                 Thread.Sleep(5);
                 if (worker.CancellationPending)
                 {
@@ -60,19 +60,25 @@ namespace SlideCat
             {
                 MessageBox.Show(e.Error.Message);
             }
-            
+            this.label_slideNotes.Text = "";
         }
 
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             BackgroundWorker worker = sender as BackgroundWorker;
-            if(_presentation.lastSlide() && _presentation.presentationItemOrder() != (_mediaItems.mediaItems.Count - 1))
+            if(_presentation.exitSlide() && _presentation.presentationItemOrder() != (_mediaItems.mediaItems.Count - 1))
             {
                 _presentation.prevSlide();
                 _presentation.loadNextPresentationItem(_mediaItems.get(_presentation.presentationItemOrder() + 1));
                 _presentation.playPresentation();
+                
             }
-            _presentation.focus();
+
+            if(_presentation.runInterval())
+            {
+                this.label_slideNotes.Text = _presentation.getSlideNotes();
+                _presentation.focus();
+            }
         }
 
         private void button_mediaItem_add_click(object sender, EventArgs e)
@@ -149,11 +155,20 @@ namespace SlideCat
 
         private void button_control_start_Click(object sender, EventArgs e)
         {
-            if(_presentation.IsPlaying == false)
+            if (_presentation.IsPlaying == false)
             {
-                this.backgroundWorker1.RunWorkerAsync();
-                _presentation.loadNextPresentationItem((MediaItem)this._mediaItems.get(0));
-                _presentation.playPresentation();
+                int _selected_index = this.comboBox_mediaItems.SelectedIndex;
+                if (_selected_index < 0)
+                {
+                    _selected_index = 0;
+                }
+                if (this.comboBox_mediaItems.Items.Count > 0) 
+                {
+                    _presentation.loadNextPresentationItem((MediaItem)this._mediaItems.get(_selected_index));
+                    _presentation.playPresentation();
+                    this.backgroundWorker1.RunWorkerAsync();
+                }
+                
             }
         }
 
@@ -178,7 +193,20 @@ namespace SlideCat
         {
             if(_presentation.IsPlaying)
             {
-                _presentation.prevSlide();
+                if(_presentation.getSlideIndex() == 0)
+                {
+                    int _next_index = _presentation.presentationItemOrder() - 1;
+                    if(_next_index >= 0)
+                    {
+                        _presentation.loadNextPresentationItem(_mediaItems.get(_next_index));
+                        _presentation.playPresentation();
+                        _presentation.goToSlideIndex(_mediaItems.get(_next_index).nrSlides - 1);
+                    }
+                } else
+                {
+                    _presentation.prevSlide();
+                }
+                
             }
         }
     }
