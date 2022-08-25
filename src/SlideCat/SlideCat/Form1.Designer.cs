@@ -339,6 +339,7 @@
             this.button_control_previous.TabIndex = 2;
             this.button_control_previous.Text = "Previous";
             this.button_control_previous.UseVisualStyleBackColor = false;
+            this.button_control_previous.Click += new System.EventHandler(this.button_control_previous_Click);
             // 
             // button_control_next
             // 
@@ -351,6 +352,7 @@
             this.button_control_next.TabIndex = 3;
             this.button_control_next.Text = "Next";
             this.button_control_next.UseVisualStyleBackColor = false;
+            this.button_control_next.Click += new System.EventHandler(this.button_control_next_Click);
             // 
             // form_main
             // 

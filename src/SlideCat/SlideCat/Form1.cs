@@ -41,12 +41,11 @@ namespace SlideCat
 
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
-
             BackgroundWorker worker = sender as BackgroundWorker;
             while (true)
             {
                 worker.ReportProgress(_presentation.slide());
-                Thread.Sleep(10);
+                Thread.Sleep(5);
                 if (worker.CancellationPending)
                 {
                     break;
@@ -61,24 +60,19 @@ namespace SlideCat
             {
                 MessageBox.Show(e.Error.Message);
             }
-            else if (e.Cancelled)
-            {
-                
-            }
-            else
-            {
-                //Console.WriteLine(e.Result.ToString());
-            }
+            
         }
 
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             BackgroundWorker worker = sender as BackgroundWorker;
-            if(_presentation.lastSlide())
+            if(_presentation.lastSlide() && _presentation.presentationItemOrder() != (_mediaItems.mediaItems.Count - 1))
             {
                 _presentation.prevSlide();
+                _presentation.loadNextPresentationItem(_mediaItems.get(_presentation.presentationItemOrder() + 1));
+                _presentation.playPresentation();
             }
-            
+            _presentation.focus();
         }
 
         private void button_mediaItem_add_click(object sender, EventArgs e)
@@ -158,7 +152,7 @@ namespace SlideCat
             if(_presentation.IsPlaying == false)
             {
                 this.backgroundWorker1.RunWorkerAsync();
-                _presentation.loadPresentationItem((MediaItem)this._mediaItems.get(0));
+                _presentation.loadNextPresentationItem((MediaItem)this._mediaItems.get(0));
                 _presentation.playPresentation();
             }
         }
@@ -169,6 +163,22 @@ namespace SlideCat
             {
                 this.backgroundWorker1.CancelAsync();
                 _presentation.stopPresentation();
+            }
+        }
+
+        private void button_control_next_Click(object sender, EventArgs e)
+        {
+            if(_presentation.IsPlaying)
+            {
+                _presentation.nextSlide();
+            }
+        }
+
+        private void button_control_previous_Click(object sender, EventArgs e)
+        {
+            if(_presentation.IsPlaying)
+            {
+                _presentation.prevSlide();
             }
         }
     }

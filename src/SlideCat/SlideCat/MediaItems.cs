@@ -78,7 +78,13 @@ namespace SlideCat
 
         public MediaItem get(int _index)
         {
-            return (MediaItem)this._mediaItems[_index];
+            if (_index >= 0 && _index < mediaItems.Count)
+            {
+                return (MediaItem)this._mediaItems[_index];
+            } else
+            {
+                return (MediaItem)_mediaItems[0];
+            }
         }
     }
 }

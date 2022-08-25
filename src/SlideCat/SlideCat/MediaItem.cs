@@ -94,7 +94,14 @@ namespace SlideCat
             }
         }
 
-        
+        public void reload()
+        {
+            if(this._presentation != null && this._type == MediaType.powerpoint)
+            {
+                this._application = new PowerPoint.Application();
+                this._presentation = this._application.Presentations.Open2007(this._src, Microsoft.Office.Core.MsoTriState.msoTrue, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoTrue);
+            }
+        }
     }
 
     public enum MediaType
