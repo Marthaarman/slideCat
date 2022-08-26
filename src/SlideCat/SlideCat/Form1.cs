@@ -45,7 +45,7 @@ namespace SlideCat
             while (true)
             {
                 worker.ReportProgress(_presentation.getSlideIndex());
-                Thread.Sleep(5);
+                Thread.Sleep(100);
                 if (worker.CancellationPending)
                 {
                     break;
@@ -66,17 +66,44 @@ namespace SlideCat
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             BackgroundWorker worker = sender as BackgroundWorker;
-            if(_presentation.exitSlide() && _presentation.presentationItemOrder() != (_mediaItems.mediaItems.Count - 1))
+            if(_presentation.turnOverSlide())
             {
-                _presentation.prevSlide();
-                _presentation.loadNextPresentationItem(_mediaItems.get(_presentation.presentationItemOrder() + 1));
-                _presentation.playPresentation();
-                
+                if(_presentation.presentationItemOrder() == (_mediaItems.mediaItems.Count - 1)) {
+                    _presentation.nextSlide();
+                }else
+                {
+                    _presentation.loadNextPresentationItem(_mediaItems.get(_presentation.presentationItemOrder() + 1));
+                    _presentation.playPresentation();
+                }
+            } else
+            {
+                if(!_presentation.validPresentation)
+                {
+                    backgroundWorker1.CancelAsync();
+                    this._presentation.stopPresentation();
+                }
             }
 
             if(_presentation.runInterval())
             {
                 this.label_slideNotes.Text = _presentation.getSlideNotes();
+                String thumbURL = this._presentation.getThumb();
+                if (thumbURL != String.Empty)
+                {
+                    this.pictureBox_currentSlideThumb.Image = new Bitmap(thumbURL);
+                }else
+                {
+                    this.pictureBox_currentSlideThumb.Image=null;
+                }
+
+                thumbURL = this._presentation.getNextThumb();
+                if(thumbURL != String.Empty)
+                {
+                    this.pictureBox_nextSlideThumb.Image = new Bitmap(thumbURL);
+                }else
+                {
+                    this.pictureBox_nextSlideThumb.Image = null;
+                }
                 _presentation.focus();
             }
         }
@@ -178,6 +205,10 @@ namespace SlideCat
             {
                 this.backgroundWorker1.CancelAsync();
                 _presentation.stopPresentation();
+                this.label_slideNotes.Text = String.Empty;
+                this.label_slideNotesNext.Text = String.Empty;
+                this.pictureBox_currentSlideThumb.Image = null;
+                this.pictureBox_nextSlideThumb.Image = null;
             }
         }
 

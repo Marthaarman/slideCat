@@ -17,6 +17,7 @@ namespace SlideCat
         private String _src = null;
         private int _nrSlides = 1;
         private int _order = 0;
+        private int _id = 0;
         private MediaType _type = MediaType.unsupported;
 
         private PowerPoint.Application _application;
@@ -63,6 +64,7 @@ namespace SlideCat
                 this._src = src;
                 this._order = order;
                 this._name = Path.GetFileName(src);
+                this._id = new Random().Next(1, 1000);
                 switch(Path.GetExtension(src))
                 {
                     case ".pptx":
@@ -70,7 +72,10 @@ namespace SlideCat
                         this._type = MediaType.powerpoint;
                         this._application = new PowerPoint.Application();
                         this._presentation = _application.Presentations.Open2007(this._src, Microsoft.Office.Core.MsoTriState.msoTrue, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoTrue);
+                        PowerPoint.SlideRange dupliSlide = this._presentation.Slides[this._presentation.Slides.Count].Duplicate();
+                        dupliSlide.MoveTo(this._presentation.Slides.Count);
                         this._nrSlides = this._presentation.Slides.Count;
+                        this.setThumbs();
                         break;
                     case ".mov":
                     case ".mp4":
@@ -102,6 +107,38 @@ namespace SlideCat
                 this._presentation = this._application.Presentations.Open2007(this._src, Microsoft.Office.Core.MsoTriState.msoTrue, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoTrue);
             }
         }
+
+        public void setThumbs()
+        {
+            
+            if(this._type == MediaType.powerpoint)
+            {
+                String _path = Path.GetTempPath() + "SlideCat\\";
+                if (!Directory.Exists(_path))
+                {
+                    Directory.CreateDirectory(_path);
+                }
+
+                _path += this._id + "\\";
+                if(Directory.Exists(_path))
+                {
+                    Directory.Delete(_path, true);
+                }
+                Directory.CreateDirectory(_path);
+
+                foreach (PowerPoint.Slide slide in this._presentation.Slides)
+                {
+                    String src = _path + slide.SlideIndex + ".jpg";
+                    slide.Export(src, "jpg", 1080, 960);
+                }    
+            }
+        }
+
+        public String getThumb(int _index)
+        {
+            return Path.GetTempPath() + "SlideCat\\" + this._id + "\\" + _index + ".jpg";
+        }
+
     }
 
     public enum MediaType
