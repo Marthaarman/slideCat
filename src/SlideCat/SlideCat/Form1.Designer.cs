@@ -50,7 +50,12 @@
             this.button_control_previous = new System.Windows.Forms.Button();
             this.button_control_next = new System.Windows.Forms.Button();
             this.tableLayoutPanel9 = new System.Windows.Forms.TableLayoutPanel();
+            this.tableLayoutPanel10 = new System.Windows.Forms.TableLayoutPanel();
             this.label_slideNotes = new System.Windows.Forms.Label();
+            this.pictureBox_currentSlideThumb = new System.Windows.Forms.PictureBox();
+            this.tableLayoutPanel11 = new System.Windows.Forms.TableLayoutPanel();
+            this.pictureBox_nextSlideThumb = new System.Windows.Forms.PictureBox();
+            this.label_slideNotesNext = new System.Windows.Forms.Label();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.groupBox_media_items.SuspendLayout();
@@ -62,6 +67,10 @@
             this.tableLayoutPanel7.SuspendLayout();
             this.tableLayoutPanel8.SuspendLayout();
             this.tableLayoutPanel9.SuspendLayout();
+            this.tableLayoutPanel10.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox_currentSlideThumb)).BeginInit();
+            this.tableLayoutPanel11.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox_nextSlideThumb)).BeginInit();
             this.SuspendLayout();
             // 
             // tableLayoutPanel1
@@ -363,26 +372,89 @@
             this.tableLayoutPanel9.ColumnCount = 2;
             this.tableLayoutPanel9.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 70F));
             this.tableLayoutPanel9.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
-            this.tableLayoutPanel9.Controls.Add(this.label_slideNotes, 0, 1);
+            this.tableLayoutPanel9.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel9.Controls.Add(this.tableLayoutPanel10, 0, 0);
+            this.tableLayoutPanel9.Controls.Add(this.tableLayoutPanel11, 1, 0);
             this.tableLayoutPanel9.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel9.Location = new System.Drawing.Point(3, 3);
             this.tableLayoutPanel9.Name = "tableLayoutPanel9";
-            this.tableLayoutPanel9.RowCount = 2;
-            this.tableLayoutPanel9.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 70F));
-            this.tableLayoutPanel9.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 30F));
+            this.tableLayoutPanel9.RowCount = 1;
+            this.tableLayoutPanel9.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel9.Size = new System.Drawing.Size(708, 381);
             this.tableLayoutPanel9.TabIndex = 1;
+            // 
+            // tableLayoutPanel10
+            // 
+            this.tableLayoutPanel10.ColumnCount = 1;
+            this.tableLayoutPanel10.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel10.Controls.Add(this.label_slideNotes, 0, 1);
+            this.tableLayoutPanel10.Controls.Add(this.pictureBox_currentSlideThumb, 0, 0);
+            this.tableLayoutPanel10.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel10.Location = new System.Drawing.Point(3, 3);
+            this.tableLayoutPanel10.Name = "tableLayoutPanel10";
+            this.tableLayoutPanel10.RowCount = 2;
+            this.tableLayoutPanel10.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 70F));
+            this.tableLayoutPanel10.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 30F));
+            this.tableLayoutPanel10.Size = new System.Drawing.Size(489, 375);
+            this.tableLayoutPanel10.TabIndex = 2;
             // 
             // label_slideNotes
             // 
             this.label_slideNotes.AutoSize = true;
             this.label_slideNotes.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label_slideNotes.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_slideNotes.Location = new System.Drawing.Point(3, 266);
+            this.label_slideNotes.ForeColor = System.Drawing.Color.White;
+            this.label_slideNotes.Location = new System.Drawing.Point(3, 262);
             this.label_slideNotes.Name = "label_slideNotes";
-            this.label_slideNotes.Size = new System.Drawing.Size(489, 115);
+            this.label_slideNotes.Size = new System.Drawing.Size(483, 113);
             this.label_slideNotes.TabIndex = 0;
-            this.label_slideNotes.Text = "Speaker notes placeholder";
+            this.label_slideNotes.Text = ".";
+            // 
+            // pictureBox_currentSlideThumb
+            // 
+            this.pictureBox_currentSlideThumb.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pictureBox_currentSlideThumb.Location = new System.Drawing.Point(3, 3);
+            this.pictureBox_currentSlideThumb.Name = "pictureBox_currentSlideThumb";
+            this.pictureBox_currentSlideThumb.Size = new System.Drawing.Size(483, 256);
+            this.pictureBox_currentSlideThumb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBox_currentSlideThumb.TabIndex = 1;
+            this.pictureBox_currentSlideThumb.TabStop = false;
+            // 
+            // tableLayoutPanel11
+            // 
+            this.tableLayoutPanel11.ColumnCount = 1;
+            this.tableLayoutPanel11.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel11.Controls.Add(this.label_slideNotesNext, 0, 1);
+            this.tableLayoutPanel11.Controls.Add(this.pictureBox_nextSlideThumb, 0, 0);
+            this.tableLayoutPanel11.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel11.Location = new System.Drawing.Point(498, 3);
+            this.tableLayoutPanel11.Name = "tableLayoutPanel11";
+            this.tableLayoutPanel11.RowCount = 2;
+            this.tableLayoutPanel11.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 30F));
+            this.tableLayoutPanel11.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 70F));
+            this.tableLayoutPanel11.Size = new System.Drawing.Size(207, 375);
+            this.tableLayoutPanel11.TabIndex = 3;
+            // 
+            // pictureBox_nextSlideThumb
+            // 
+            this.pictureBox_nextSlideThumb.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pictureBox_nextSlideThumb.Location = new System.Drawing.Point(3, 3);
+            this.pictureBox_nextSlideThumb.Name = "pictureBox_nextSlideThumb";
+            this.pictureBox_nextSlideThumb.Size = new System.Drawing.Size(201, 106);
+            this.pictureBox_nextSlideThumb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBox_nextSlideThumb.TabIndex = 0;
+            this.pictureBox_nextSlideThumb.TabStop = false;
+            // 
+            // label_slideNotesNext
+            // 
+            this.label_slideNotesNext.AutoSize = true;
+            this.label_slideNotesNext.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label_slideNotesNext.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_slideNotesNext.Location = new System.Drawing.Point(3, 112);
+            this.label_slideNotesNext.Name = "label_slideNotesNext";
+            this.label_slideNotesNext.Size = new System.Drawing.Size(201, 263);
+            this.label_slideNotesNext.TabIndex = 1;
+            this.label_slideNotesNext.Text = ".";
             // 
             // form_main
             // 
@@ -407,7 +479,12 @@
             this.tableLayoutPanel7.ResumeLayout(false);
             this.tableLayoutPanel8.ResumeLayout(false);
             this.tableLayoutPanel9.ResumeLayout(false);
-            this.tableLayoutPanel9.PerformLayout();
+            this.tableLayoutPanel10.ResumeLayout(false);
+            this.tableLayoutPanel10.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox_currentSlideThumb)).EndInit();
+            this.tableLayoutPanel11.ResumeLayout(false);
+            this.tableLayoutPanel11.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox_nextSlideThumb)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -435,8 +512,13 @@
         private System.Windows.Forms.Button button_control_stop;
         private System.Windows.Forms.Button button_control_previous;
         private System.Windows.Forms.Button button_control_next;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel9;
         private System.Windows.Forms.Label label_slideNotes;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel9;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel10;
+        private System.Windows.Forms.PictureBox pictureBox_currentSlideThumb;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel11;
+        private System.Windows.Forms.PictureBox pictureBox_nextSlideThumb;
+        private System.Windows.Forms.Label label_slideNotesNext;
     }
 }
 

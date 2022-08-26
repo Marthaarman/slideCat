@@ -133,6 +133,18 @@ namespace SlideCat
             return false;
         }
 
+        public bool turnOverSlide()
+        {
+            if(this._isPlaying && this._validPresentation())
+            {
+                if(this._currentSlideIndex + 1 == this._currentMediaItem.nrSlides)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public bool firstSlide()
         {
             return false;
@@ -157,7 +169,7 @@ namespace SlideCat
         {
             this._intervalCounter++;
             this._setSlideIndex();
-            if(this._intervalCounter >= 50)
+            if(this._intervalCounter >= 5)
             {
                 this._intervalCounter = 0;
                 this._focus();
@@ -167,6 +179,22 @@ namespace SlideCat
             return false;
         }
 
+        public String getThumb()
+        {
+            return this._currentMediaItem.getThumb(_currentSlideIndex + 1);
+        }
+
+        public String getNextThumb()
+        {
+            if (_currentSlideIndex != (this._currentMediaItem.nrSlides - 2))
+            {
+                return this._currentMediaItem.getThumb(_currentSlideIndex + 2);
+            }else
+            {
+                return String.Empty;
+            }
+        }
+        
         private void _focus()
         {
             if(this._isPlaying && this._validPresentation())
@@ -192,7 +220,6 @@ namespace SlideCat
                             try
                             {
                                 var range = tf.TextRange;
-                                Console.WriteLine(range.Text);
                                 if (range.Length > length)
                                 {
                                     length = range.Length;
@@ -241,5 +268,10 @@ namespace SlideCat
             return true;
         }
 
+
+        public bool validPresentation
+        {
+            get { return this._validPresentation(); }
+        }
     }
 }
