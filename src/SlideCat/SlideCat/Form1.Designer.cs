@@ -42,7 +42,7 @@
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
             this.comboBox_slides = new System.Windows.Forms.ComboBox();
             this.tableLayoutPanel6 = new System.Windows.Forms.TableLayoutPanel();
-            this.button5 = new System.Windows.Forms.Button();
+            this.button_slides_goTo = new System.Windows.Forms.Button();
             this.tableLayoutPanel7 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel8 = new System.Windows.Forms.TableLayoutPanel();
             this.button_control_start = new System.Windows.Forms.Button();
@@ -54,8 +54,8 @@
             this.label_slideNotes = new System.Windows.Forms.Label();
             this.pictureBox_currentSlideThumb = new System.Windows.Forms.PictureBox();
             this.tableLayoutPanel11 = new System.Windows.Forms.TableLayoutPanel();
-            this.pictureBox_nextSlideThumb = new System.Windows.Forms.PictureBox();
             this.label_slideNotesNext = new System.Windows.Forms.Label();
+            this.pictureBox_nextSlideThumb = new System.Windows.Forms.PictureBox();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.groupBox_media_items.SuspendLayout();
@@ -256,7 +256,7 @@
             // 
             this.tableLayoutPanel6.ColumnCount = 1;
             this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel6.Controls.Add(this.button5, 0, 0);
+            this.tableLayoutPanel6.Controls.Add(this.button_slides_goTo, 0, 0);
             this.tableLayoutPanel6.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel6.Location = new System.Drawing.Point(427, 3);
             this.tableLayoutPanel6.Name = "tableLayoutPanel6";
@@ -269,17 +269,18 @@
             this.tableLayoutPanel6.Size = new System.Drawing.Size(69, 129);
             this.tableLayoutPanel6.TabIndex = 0;
             // 
-            // button5
+            // button_slides_goTo
             // 
-            this.button5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.button5.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.button5.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.button5.Location = new System.Drawing.Point(3, 3);
-            this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(63, 19);
-            this.button5.TabIndex = 0;
-            this.button5.Text = "Go to slide";
-            this.button5.UseVisualStyleBackColor = false;
+            this.button_slides_goTo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            this.button_slides_goTo.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.button_slides_goTo.Enabled = false;
+            this.button_slides_goTo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.button_slides_goTo.Location = new System.Drawing.Point(3, 3);
+            this.button_slides_goTo.Name = "button_slides_goTo";
+            this.button_slides_goTo.Size = new System.Drawing.Size(63, 19);
+            this.button_slides_goTo.TabIndex = 0;
+            this.button_slides_goTo.Text = "Go to slide";
+            this.button_slides_goTo.UseVisualStyleBackColor = false;
             // 
             // tableLayoutPanel7
             // 
@@ -332,6 +333,7 @@
             // 
             this.button_control_stop.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.button_control_stop.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.button_control_stop.Enabled = false;
             this.button_control_stop.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.button_control_stop.Location = new System.Drawing.Point(153, 3);
             this.button_control_stop.Name = "button_control_stop";
@@ -345,6 +347,7 @@
             // 
             this.button_control_previous.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.button_control_previous.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.button_control_previous.Enabled = false;
             this.button_control_previous.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.button_control_previous.Location = new System.Drawing.Point(3, 193);
             this.button_control_previous.Name = "button_control_previous";
@@ -358,6 +361,7 @@
             // 
             this.button_control_next.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.button_control_next.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.button_control_next.Enabled = false;
             this.button_control_next.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.button_control_next.Location = new System.Drawing.Point(153, 193);
             this.button_control_next.Name = "button_control_next";
@@ -435,16 +439,6 @@
             this.tableLayoutPanel11.Size = new System.Drawing.Size(207, 375);
             this.tableLayoutPanel11.TabIndex = 3;
             // 
-            // pictureBox_nextSlideThumb
-            // 
-            this.pictureBox_nextSlideThumb.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pictureBox_nextSlideThumb.Location = new System.Drawing.Point(3, 3);
-            this.pictureBox_nextSlideThumb.Name = "pictureBox_nextSlideThumb";
-            this.pictureBox_nextSlideThumb.Size = new System.Drawing.Size(201, 106);
-            this.pictureBox_nextSlideThumb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pictureBox_nextSlideThumb.TabIndex = 0;
-            this.pictureBox_nextSlideThumb.TabStop = false;
-            // 
             // label_slideNotesNext
             // 
             this.label_slideNotesNext.AutoSize = true;
@@ -455,6 +449,16 @@
             this.label_slideNotesNext.Size = new System.Drawing.Size(201, 263);
             this.label_slideNotesNext.TabIndex = 1;
             this.label_slideNotesNext.Text = ".";
+            // 
+            // pictureBox_nextSlideThumb
+            // 
+            this.pictureBox_nextSlideThumb.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pictureBox_nextSlideThumb.Location = new System.Drawing.Point(3, 3);
+            this.pictureBox_nextSlideThumb.Name = "pictureBox_nextSlideThumb";
+            this.pictureBox_nextSlideThumb.Size = new System.Drawing.Size(201, 106);
+            this.pictureBox_nextSlideThumb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBox_nextSlideThumb.TabIndex = 0;
+            this.pictureBox_nextSlideThumb.TabStop = false;
             // 
             // form_main
             // 
@@ -503,7 +507,7 @@
         private System.Windows.Forms.Button button_mediaItem_add;
         private System.Windows.Forms.Button button_mediaItem_remove;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel6;
-        private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.Button button_slides_goTo;
         private System.Windows.Forms.ComboBox comboBox_mediaItems;
         private System.Windows.Forms.ComboBox comboBox_slides;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel7;

@@ -54,6 +54,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SlideNotes.cs" />
+    <Compile Include="PPTImage.cs" />
+    <Compile Include="PPTVideo.cs" />
+    <Compile Include="PPT.cs" />
     <Compile Include="Presentation.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>

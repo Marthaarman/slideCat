@@ -18,14 +18,11 @@ namespace SlideCat
         private int _nrSlides = 1;
         private int _order = 0;
         private int _id = 0;
+
         private MediaType _type = MediaType.unsupported;
-
-        private PowerPoint.Application _application;
         private PowerPoint.Presentation _presentation;
-
-        public PowerPoint.Application application { get { return _application; } }
         public PowerPoint.Presentation presentation { get { return _presentation; } }
-
+        public PowerPoint.Slides slides { get { return _presentation.Slides; } }
         public String name
         {
             get { return this._name; }
@@ -65,48 +62,55 @@ namespace SlideCat
                 this._order = order;
                 this._name = Path.GetFileName(src);
                 this._id = new Random().Next(1, 1000);
+
+                var ppt = new PPT();
+
                 switch(Path.GetExtension(src))
                 {
                     case ".pptx":
                     case ".ppt":
                         this._type = MediaType.powerpoint;
-                        this._application = new PowerPoint.Application();
-                        this._presentation = _application.Presentations.Open2007(this._src, Microsoft.Office.Core.MsoTriState.msoTrue, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoTrue);
-                        PowerPoint.SlideRange dupliSlide = this._presentation.Slides[this._presentation.Slides.Count].Duplicate();
-                        dupliSlide.MoveTo(this._presentation.Slides.Count);
-                        this._nrSlides = this._presentation.Slides.Count;
-                        this.setThumbs();
+                        ppt = new PPT();
                         break;
                     case ".mov":
                     case ".mp4":
                     case ".mp3":
                     case ".avi":
                         this._type = MediaType.video;
+                        ppt = new PPTVideo();
+                        
                         break;
                     case ".jpg":
                     case ".png":
                     case ".gif":
                         this._type = MediaType.image;
+                        ppt = new PPTVideo();
                         break;
                     case ".pdf":
+                        //currently unsupported
                         this._type = MediaType.pdf;
+                        this._type = MediaType.unsupported;
+                        //ppt = new PPTPDF();
                         break;
                     default:
                         this._type = MediaType.unsupported;
                         break;
                 } 
+
+                if(this._type != MediaType.unsupported)
+                {
+                    ppt.Load(src);
+                    ppt.createPresentation();
+                    this._presentation = ppt.getPresentation();
+                    this._nrSlides = ppt.nrSlides;
+                }
                 
             }
         }
 
-        public void reload()
-        {
-            if(this._presentation != null && this._type == MediaType.powerpoint)
-            {
-                this._application = new PowerPoint.Application();
-                this._presentation = this._application.Presentations.Open2007(this._src, Microsoft.Office.Core.MsoTriState.msoTrue, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoTrue);
-            }
-        }
+
+
+        
 
         public void setThumbs()
         {

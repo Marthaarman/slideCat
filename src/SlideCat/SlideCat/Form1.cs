@@ -19,6 +19,7 @@ namespace SlideCat
         //private ArrayList mediaItems = new ArrayList();
         private MediaItems _mediaItems = new MediaItems();
         private Presentation _presentation = new Presentation();
+        
 
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
 
@@ -66,41 +67,34 @@ namespace SlideCat
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             BackgroundWorker worker = sender as BackgroundWorker;
-            if(_presentation.turnOverSlide())
+           
+            if(!_presentation.validPresentation)
             {
-                if(_presentation.presentationItemOrder() == (_mediaItems.mediaItems.Count - 1)) {
-                    _presentation.nextSlide();
-                }else
-                {
-                    _presentation.loadNextPresentationItem(_mediaItems.get(_presentation.presentationItemOrder() + 1));
-                    _presentation.playPresentation();
-                }
-            } else
-            {
-                if(!_presentation.validPresentation)
-                {
-                    backgroundWorker1.CancelAsync();
-                    this._presentation.stopPresentation();
-                }
+                backgroundWorker1.CancelAsync();
+                this._presentation.stopPresentation();
             }
+            
 
             if(_presentation.runInterval())
             {
-                this.label_slideNotes.Text = _presentation.getSlideNotes();
+                this.label_slideNotes.Text = _presentation.slideNotes;
+                this.label_slideNotesNext.Text = _presentation.slideNotesNext;
                 String thumbURL = this._presentation.getThumb();
                 if (thumbURL != String.Empty)
                 {
                     this.pictureBox_currentSlideThumb.Image = new Bitmap(thumbURL);
-                }else
+                }
+                else
                 {
-                    this.pictureBox_currentSlideThumb.Image=null;
+                    this.pictureBox_currentSlideThumb.Image = null;
                 }
 
                 thumbURL = this._presentation.getNextThumb();
-                if(thumbURL != String.Empty)
+                if (thumbURL != String.Empty)
                 {
                     this.pictureBox_nextSlideThumb.Image = new Bitmap(thumbURL);
-                }else
+                }
+                else
                 {
                     this.pictureBox_nextSlideThumb.Image = null;
                 }
@@ -189,13 +183,17 @@ namespace SlideCat
                 {
                     _selected_index = 0;
                 }
+                
                 if (this.comboBox_mediaItems.Items.Count > 0) 
                 {
-                    _presentation.loadNextPresentationItem((MediaItem)this._mediaItems.get(_selected_index));
+                    this.button_control_start.Text = "Processing, please wait.";
+                    _presentation.createPresentation(this._mediaItems);
                     _presentation.playPresentation();
                     this.backgroundWorker1.RunWorkerAsync();
+                    this._setControlsStateStart();
+
                 }
-                
+                this.button_control_start.Text = "Start";
             }
         }
 
@@ -205,11 +203,43 @@ namespace SlideCat
             {
                 this.backgroundWorker1.CancelAsync();
                 _presentation.stopPresentation();
-                this.label_slideNotes.Text = String.Empty;
-                this.label_slideNotesNext.Text = String.Empty;
-                this.pictureBox_currentSlideThumb.Image = null;
-                this.pictureBox_nextSlideThumb.Image = null;
+                this._setControlsStateSstop();
+                this._resetPreview();
             }
+        }
+
+        private void _resetPreview()
+        {
+            this.label_slideNotes.Text = String.Empty;
+            this.label_slideNotesNext.Text = String.Empty;
+            this.pictureBox_currentSlideThumb.Image = null;
+            this.pictureBox_nextSlideThumb.Image = null;
+        }
+
+        private void _setControlsStateStart()
+        {
+            this.button_control_start.Enabled = false;
+            this.button_control_stop.Enabled = true;
+            this.button_mediaItem_add.Enabled = false;
+            this.button_mediaItem_moveDown.Enabled = false;
+            this.button_mediaItem_moveUp.Enabled = false;
+            this.button_mediaItem_remove.Enabled = false;
+            this.button_slides_goTo.Enabled = true;
+            this.button_control_next.Enabled = true;
+            this.button_control_previous.Enabled = true;
+        }
+
+        private void _setControlsStateSstop()
+        {
+            this.button_control_start.Enabled = true;
+            this.button_control_stop.Enabled = false;
+            this.button_mediaItem_add.Enabled = true;
+            this.button_mediaItem_moveDown.Enabled = true;
+            this.button_mediaItem_moveUp.Enabled = true;
+            this.button_mediaItem_remove.Enabled = true;
+            this.button_slides_goTo.Enabled = false;
+            this.button_control_next.Enabled = false;
+            this.button_control_previous.Enabled = false;
         }
 
         private void button_control_next_Click(object sender, EventArgs e)
@@ -224,20 +254,7 @@ namespace SlideCat
         {
             if(_presentation.IsPlaying)
             {
-                if(_presentation.getSlideIndex() == 0)
-                {
-                    int _next_index = _presentation.presentationItemOrder() - 1;
-                    if(_next_index >= 0)
-                    {
-                        _presentation.loadNextPresentationItem(_mediaItems.get(_next_index));
-                        _presentation.playPresentation();
-                        _presentation.goToSlideIndex(_mediaItems.get(_next_index).nrSlides - 1);
-                    }
-                } else
-                {
-                    _presentation.prevSlide();
-                }
-                
+                _presentation.prevSlide();
             }
         }
     }
