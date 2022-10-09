@@ -3,10 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.ComponentModel;
+using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
 using PowerPoint = Microsoft.Office.Interop.PowerPoint;
-
+using System.Windows.Forms;
 
 namespace SlideCat
 {
@@ -30,6 +32,9 @@ namespace SlideCat
 
         private string _pptxPath = System.IO.Path.GetTempPath() + "/slidecat/";
 
+        private bool _stopping = false;
+        public bool stopping { get { return _stopping; } }
+
         public Presentation()
         {
             if(!Directory.Exists(this._pptxPath))
@@ -46,21 +51,39 @@ namespace SlideCat
 
         private void _emptyPresentationDirectory()
         {
-            System.IO.DirectoryInfo di = new DirectoryInfo(this._pptxPath);
+            if(!this._isPlaying)
+            {
 
-            foreach (FileInfo file in di.GetFiles())
-            {
-                file.Delete();
+                System.IO.DirectoryInfo di = new DirectoryInfo(this._pptxPath);
+
+                foreach (FileInfo file in di.GetFiles())
+                {
+                    try
+                    {
+                        file.Delete();
+                    }
+                    catch (Exception ex)
+                    { 
+                        Console.WriteLine(ex.Message);
+                    } 
+                }
+                foreach (DirectoryInfo dir in di.GetDirectories())
+                {
+                    try
+                    {
+                        dir.Delete(true);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
             }
-            foreach (DirectoryInfo dir in di.GetDirectories())
-            {
-                dir.Delete(true);
-            }
+            
         }
 
-        public void createPresentation(MediaItems mediaItems)
+        public void createPresentation(MediaItems mediaItems, ref BackgroundWorker worker)
         {
-
             //  initiate new application and main presentation
             this._application = new PowerPoint.Application();
             this._presentation = this._application.Presentations.Add(MsoTriState.msoFalse);
@@ -72,6 +95,7 @@ namespace SlideCat
             //  add each temporary powerpoint into the main powerpoint
             mediaItems.sort();
             int i = 0;
+            int nrItems = mediaItems.mediaItems.Count;
             foreach (MediaItem mediaItem in mediaItems.mediaItems)
             {
                 i++;
@@ -79,19 +103,16 @@ namespace SlideCat
                 pres.SaveCopyAs(this._pptxPath + "pptx_"+i, PowerPoint.PpSaveAsFileType.ppSaveAsDefault, MsoTriState.msoTrue);
                 this._presentation.Slides.InsertFromFile(this._pptxPath + "pptx_" + i + ".pptx", this._presentation.Slides.Count);
                 pres.Close();
+
+                double percentageDouble = (i * 100) / (nrItems + 1);
+                percentageDouble = Math.Round(percentageDouble);
+                int percentageInt = (int)percentageDouble;
+                worker.ReportProgress(percentageInt);
             }
             
             //  store the main presentation as file
             this._presentation.SaveCopyAs(this._pptxPath + "pptxfinal", PowerPoint.PpSaveAsFileType.ppSaveAsDefault, MsoTriState.msoTrue);
 
-            //  store each slide as image for thumbs
-            Directory.CreateDirectory(this._pptxPath + "thumbs/");
-            i = 0;
-            foreach(PowerPoint.Slide slide in this._presentation.Slides)
-            {
-                i++;
-                slide.Export(this._pptxPath + "thumbs/" + i + ".png", "PNG");
-            }
         }
 
         public void playPresentation()
@@ -108,11 +129,18 @@ namespace SlideCat
             PowerPoint.SlideShowSettings settings = this._presentation.SlideShowSettings;
 
             settings.ShowType = (PowerPoint.PpSlideShowType)1;
-            settings.ShowPresenterView = MsoTriState.msoFalse;
+            settings.ShowPresenterView = MsoTriState.msoTrue;
             PowerPoint.SlideShowWindow sw = settings.Run();
 
             this._presentation.SlideShowWindow.View.GotoSlide(this._currentSlideIndex + 1);
             this._presentation.SlideShowWindow.View.FirstAnimationIsAutomatic();
+            this._stopping = false;
+
+            this._application.PresentationBeforeClose += delegate {
+                this._stopping = true;
+                this._isPlaying = false;
+                this._presentation.Save();
+            };
 
 
             this._isPlaying = true;
@@ -120,46 +148,58 @@ namespace SlideCat
 
         public void stopPresentation()
         {
-            //String file = _presentation.Path + "\\" + _presentation.Name;
-            this._stopPresentation(this._presentation);
-            this._emptyPresentationDirectory();
-            this._isPlaying = false;
+            if (this._presentationPlaying())
+            {
+                this._isPlaying = false;
+                this._stopPresentation(this._presentation);
+            }
         }
 
         private void _stopPresentation(PowerPoint.Presentation _presentation)
         {
-            try
+            if (this._presentationPlaying())
             {
-                _presentation.Close();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("LOG - Presentation.cs - _stopPresentation() - catch");
-                Console.WriteLine(ex.Message);
+                try
+                {
+                    _presentation.Close();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("LOG - Presentation.cs - _stopPresentation() - catch");
+                    Console.WriteLine(ex.Message);
+                }
             }
         }
-
         
         public void nextSlide()
         {
-            this._presentation.SlideShowWindow.View.Next();
-            this._focus();
+            if (this._presentationPlaying())
+            {
+                this._presentation.SlideShowWindow.View.Next();
+                this._focus();
+            }
         }
 
         public void prevSlide()
         {
-            this._presentation.SlideShowWindow.View.Previous();
-            this._focus();
+            if (this._presentationPlaying())
+            {
+                this._presentation.SlideShowWindow.View.Previous();
+                this._focus();
+            }
         }
 
         public void goToSlideIndex(int _index)
         {
-            this._presentation.SlideShowWindow.View.GotoSlide(_index + 1);
+            if (this._presentationPlaying())
+            {
+                this._presentation.SlideShowWindow.View.GotoSlide(_index + 1);
+            }
         }
 
         public bool exitSlide()
         {
-            if(this._isPlaying && this._validPresentation())
+            if(this._presentationPlaying())
             {
                 try
                 {
@@ -173,20 +213,10 @@ namespace SlideCat
         }
 
         
-
-        public bool firstSlide()
-        {
-            return false;
-        }
-
         public int getSlideIndex()
         {
             return _currentSlideIndex;
         }        
-
-   
-
-        
 
         public void focus()
         {
@@ -195,13 +225,11 @@ namespace SlideCat
 
         public bool runInterval()
         {
-            this._intervalCounter++;
-            this._setSlideIndex();
-            if(this._intervalCounter >= 5)
+            if(this._presentationPlaying())
             {
-                this._intervalCounter = 0;
-                this._focus();
-                this._obtainSlideNotes();
+                //this._setSlideIndex();
+                //this._focus();
+                //this._obtainSlideNotes();
                 return true;
             }
             return false;
@@ -209,22 +237,37 @@ namespace SlideCat
 
         public String getThumb()
         {
-            return this._pptxPath + "thumbs/" + (this._currentSlideIndex + 1) + ".png";
+            if (this._presentationPlaying() && !this.exitSlide())
+            {
+                return this._pptxPath + "thumbs/" + (this._currentSlideIndex + 1) + ".png";
+            }
+            return String.Empty;
         }
 
         public String getNextThumb()
         {
-            if (_currentSlideIndex != (this._presentation.Slides.Count - 1))
+            if (this._presentationPlaying() && !this.exitSlide())
             {
-                return this._pptxPath + "thumbs/" + (this._currentSlideIndex + 2) + ".png";
+                if (_currentSlideIndex != (this._presentation.Slides.Count - 1))
+                {
+                    return this._pptxPath + "thumbs/" + (this._currentSlideIndex + 2) + ".png";
+                }
             }
-            
             return String.Empty;
         }
         
+       public void stop()
+        {
+            if(this._presentationPlaying())
+            {
+                this.stopPresentation();
+                this._emptyPresentationDirectory();
+            }
+        }
+
         private void _focus()
         {
-            if(this._isPlaying && this._validPresentation())
+            if(this._presentationPlaying())
             {
                 this._presentation.SlideShowWindow.Activate();
             }
@@ -232,65 +275,75 @@ namespace SlideCat
 
         private void _obtainSlideNotes()
         {
-            this._slideNotes = this._getSlideNotes(_currentSlideIndex + 1);
-            this._slideNotesNext = this._getSlideNotes(_currentSlideIndex + 2);
+            if(this._presentationPlaying())
+            {
+                this._slideNotes = this._getSlideNotes(_currentSlideIndex + 1);
+                this._slideNotesNext = this._getSlideNotes(_currentSlideIndex + 2);
+            }
         }
 
         private string _getSlideNotes(int slideNR)
         {
             String notes = String.Empty;
-            if (this.IsPlaying && !this.exitSlide() && this._validPresentation() && this._presentation.Slides.Count >= slideNR)
+            
+            if (!this._stopping && this._presentationPlaying())
             {
-
-                PowerPoint.Slide slide = this._presentation.Slides[slideNR];
-                if (slide.HasNotesPage == MsoTriState.msoTrue)
+                if (this._presentation.Slides.Count >= slideNR)
                 {
-                    int length = 0;
-                    foreach (PowerPoint.Shape shape in slide.NotesPage.Shapes)
+                    PowerPoint.Slide slide = this._presentation.Slides[slideNR];
+                    if (slide.HasNotesPage == MsoTriState.msoTrue)
                     {
-                        if (shape.Type == MsoShapeType.msoPlaceholder)
+                        int length = 0;
+                        foreach (PowerPoint.Shape shape in slide.NotesPage.Shapes)
                         {
-                            var tf = shape.TextFrame;
-                            try
+                            if (shape.Type == MsoShapeType.msoPlaceholder)
                             {
-                                var range = tf.TextRange;
-                                if (range.Length > length)
+                                var tf = shape.TextFrame;
+                                try
                                 {
-                                    length = range.Length;
-                                    notes = range.Text;
+                                    var range = tf.TextRange;
+                                    if (range.Length > length)
+                                    {
+                                        length = range.Length;
+                                        notes = range.Text;
+                                    }
                                 }
+                                catch (Exception ex)
+                                { }
                             }
-                            catch (Exception ex)
-                            { }
                         }
                     }
+                } else
+                {
+                    notes = "End of presentation";
                 }
             }
             return notes;
         }
+
         private void _setSlideIndex()
         {
             this._currentSlideIndex = 0;
-            if (this._isPlaying && this._validPresentation())
+            try
             {
-                
-                try
-                {
-                    this._currentSlideIndex = this._presentation.SlideShowWindow.View.Slide.SlideIndex - 1;
-                } catch
-                { }
-                    
-                
+                this._currentSlideIndex = this._presentation.SlideShowWindow.View.Slide.SlideIndex - 1;
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
+            
         }
 
-        private bool _validPresentation()
+       
+
+        private bool _presentationPlaying()
         {
             try
             {
                 int tmp = this._presentation.Slides.Count;
-            }
-            catch
+                return this._isPlaying;
+                
+            }catch
             {
                 return false;
             }
@@ -298,9 +351,9 @@ namespace SlideCat
         }
 
 
-        public bool validPresentation
+        public bool presentationPlaying
         {
-            get { return this._validPresentation(); }
+            get { return this._presentationPlaying(); }
         }
     }
 }
