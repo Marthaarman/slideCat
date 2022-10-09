@@ -19,88 +19,87 @@ namespace SlideCat
         //private ArrayList mediaItems = new ArrayList();
         private MediaItems _mediaItems = new MediaItems();
         private Presentation _presentation = new Presentation();
+        private int _percentage = 0;
         
 
-        private System.ComponentModel.BackgroundWorker backgroundWorker1;
-
+        private BackgroundWorker backgroundWorker_createPresentation;
+        private BackgroundWorker backgroundWorker_statusPresentation;
         public form_main()
         {
             InitializeComponent();
-            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-            this.backgroundWorker1.WorkerReportsProgress = true;
-            this.backgroundWorker1.WorkerSupportsCancellation = true;
-            InitializeBackgroundWorker();
-
+            InitializeBackgroundWorkers();
+            this.FormClosing += _formClosing;
+            this.progressBar.Visible = false;
         }
 
-        private void InitializeBackgroundWorker()
+        private void _formClosing(object sender, FormClosingEventArgs e)
         {
-            backgroundWorker1.DoWork += new DoWorkEventHandler(backgroundWorker1_DoWork);
-            backgroundWorker1.RunWorkerCompleted += new RunWorkerCompletedEventHandler(backgroundWorker1_RunWorkerCompleted);
-            backgroundWorker1.ProgressChanged += new ProgressChangedEventHandler(backgroundWorker1_ProgressChanged);
+            this._presentation.stop();
         }
 
-        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        private void InitializeBackgroundWorkers()
+        {
+            this.backgroundWorker_createPresentation = new BackgroundWorker();
+            this.backgroundWorker_createPresentation.WorkerReportsProgress = true;
+            this.backgroundWorker_createPresentation.DoWork += new DoWorkEventHandler(backgroundWorker_createPresentation_DoWork);
+            this.backgroundWorker_createPresentation.RunWorkerCompleted += new RunWorkerCompletedEventHandler(backgroundWorker_createPresentation_RunWorkerCompleted);
+            this.backgroundWorker_createPresentation.ProgressChanged += new ProgressChangedEventHandler(backgroundWorker_createPresentation_ProgressChanged);
+
+
+            this.backgroundWorker_statusPresentation = new BackgroundWorker();
+            this.backgroundWorker_statusPresentation.DoWork += new DoWorkEventHandler(backgroundWorker_statusPresentation_DoWork);
+            this.backgroundWorker_statusPresentation.RunWorkerCompleted += new RunWorkerCompletedEventHandler(backgroundWorker_statusPresentation_RunWorkerCompleted);
+        }
+
+        private void backgroundWorker_createPresentation_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker worker = sender as BackgroundWorker;
-            while (true)
-            {
-                worker.ReportProgress(_presentation.getSlideIndex());
-                Thread.Sleep(100);
-                if (worker.CancellationPending)
-                {
-                    break;
-                }
-            }
+            _presentation.createPresentation(this._mediaItems, ref worker);
         }
 
-        private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void backgroundWorker_createPresentation_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             // First, handle the case where an exception was thrown.
             if (e.Error != null)
             {
                 MessageBox.Show(e.Error.Message);
             }
-            this.label_slideNotes.Text = "";
+            this.progressBar.Value = 100;
+            _presentation.playPresentation();
+            this.backgroundWorker_statusPresentation.RunWorkerAsync();
+            this.progressBar.Visible = false;
         }
 
-        private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        
+        private void backgroundWorker_createPresentation_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             BackgroundWorker worker = sender as BackgroundWorker;
-           
-            if(!_presentation.validPresentation)
-            {
-                backgroundWorker1.CancelAsync();
-                this._presentation.stopPresentation();
-            }
-            
+            int percentage = e.ProgressPercentage;
+            this.progressBar.Value = percentage;
+        }
 
-            if(_presentation.runInterval())
-            {
-                this.label_slideNotes.Text = _presentation.slideNotes;
-                this.label_slideNotesNext.Text = _presentation.slideNotesNext;
-                String thumbURL = this._presentation.getThumb();
-                if (thumbURL != String.Empty)
+        private void backgroundWorker_statusPresentation_DoWork(object sender, DoWorkEventArgs e)
+        {
+            while (true) { 
+                if (!this._presentation.IsPlaying)
                 {
-                    this.pictureBox_currentSlideThumb.Image = new Bitmap(thumbURL);
+                    break;
                 }
-                else
-                {
-                    this.pictureBox_currentSlideThumb.Image = null;
-                }
-
-                thumbURL = this._presentation.getNextThumb();
-                if (thumbURL != String.Empty)
-                {
-                    this.pictureBox_nextSlideThumb.Image = new Bitmap(thumbURL);
-                }
-                else
-                {
-                    this.pictureBox_nextSlideThumb.Image = null;
-                }
-                _presentation.focus();
             }
         }
+
+        private void backgroundWorker_statusPresentation_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            // First, handle the case where an exception was thrown.
+            if (e.Error != null)
+            {
+                MessageBox.Show(e.Error.Message);
+            }
+            this._presentationStopped();
+        }
+        
+
+
 
         private void button_mediaItem_add_click(object sender, EventArgs e)
         {
@@ -111,6 +110,7 @@ namespace SlideCat
 
             //  set image thumb sizes
             //setImageListSize();
+            this.Cursor = Cursors.WaitCursor;
 
             //  setup dialog
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -134,6 +134,8 @@ namespace SlideCat
                 _mediaItems.addFile(filePath);
                 this.reloadMediaItems();
             }
+
+            this.Cursor=Cursors.Default;
         }
 
        
@@ -186,76 +188,45 @@ namespace SlideCat
                 
                 if (this.comboBox_mediaItems.Items.Count > 0) 
                 {
+                    this.Cursor = Cursors.WaitCursor;
+
                     this.button_control_start.Text = "Processing, please wait.";
-                    _presentation.createPresentation(this._mediaItems);
-                    _presentation.playPresentation();
-                    this.backgroundWorker1.RunWorkerAsync();
+                    this.button_control_start.Enabled = false;
+                    this.progressBar.Visible = true;
+                    this.progressBar.Value = 0;
+                    this.backgroundWorker_createPresentation.RunWorkerAsync();
                     this._setControlsStateStart();
 
                 }
-                this.button_control_start.Text = "Start";
+                this.Cursor=Cursors.Default;
             }
         }
 
-        private void button_control_stop_Click(object sender, EventArgs e)
+        private void _presentationStopped()
         {
-            if(_presentation.IsPlaying)
-            {
-                this.backgroundWorker1.CancelAsync();
-                _presentation.stopPresentation();
-                this._setControlsStateSstop();
-                this._resetPreview();
-            }
+            _setControlsStateSstop();
         }
 
-        private void _resetPreview()
-        {
-            this.label_slideNotes.Text = String.Empty;
-            this.label_slideNotesNext.Text = String.Empty;
-            this.pictureBox_currentSlideThumb.Image = null;
-            this.pictureBox_nextSlideThumb.Image = null;
-        }
+        
 
         private void _setControlsStateStart()
         {
+            this.button_control_start.Text = "Started, press [esc] to stop";
             this.button_control_start.Enabled = false;
-            this.button_control_stop.Enabled = true;
             this.button_mediaItem_add.Enabled = false;
+            this.button_mediaItem_remove.Enabled = false;
             this.button_mediaItem_moveDown.Enabled = false;
             this.button_mediaItem_moveUp.Enabled = false;
-            this.button_mediaItem_remove.Enabled = false;
-            this.button_slides_goTo.Enabled = true;
-            this.button_control_next.Enabled = true;
-            this.button_control_previous.Enabled = true;
         }
 
         private void _setControlsStateSstop()
         {
+            this.button_control_start.Text = "Start";
             this.button_control_start.Enabled = true;
-            this.button_control_stop.Enabled = false;
             this.button_mediaItem_add.Enabled = true;
+            this.button_mediaItem_remove.Enabled = true;
             this.button_mediaItem_moveDown.Enabled = true;
             this.button_mediaItem_moveUp.Enabled = true;
-            this.button_mediaItem_remove.Enabled = true;
-            this.button_slides_goTo.Enabled = false;
-            this.button_control_next.Enabled = false;
-            this.button_control_previous.Enabled = false;
-        }
-
-        private void button_control_next_Click(object sender, EventArgs e)
-        {
-            if(_presentation.IsPlaying)
-            {
-                _presentation.nextSlide();
-            }
-        }
-
-        private void button_control_previous_Click(object sender, EventArgs e)
-        {
-            if(_presentation.IsPlaying)
-            {
-                _presentation.prevSlide();
-            }
         }
     }
 }
