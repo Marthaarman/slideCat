@@ -81,16 +81,18 @@ namespace SlideCat
                         
                         break;
                     case ".jpg":
+                    case ".jpeg":
+                    case ".JPEG":
+                    case ".JPG":
                     case ".png":
                     case ".gif":
                         this._type = MediaType.image;
-                        ppt = new PPTVideo();
+                        ppt = new PPTImage();
                         break;
                     case ".pdf":
                         //currently unsupported
                         this._type = MediaType.pdf;
-                        this._type = MediaType.unsupported;
-                        //ppt = new PPTPDF();
+                        ppt = new PPTPDF();
                         break;
                     default:
                         this._type = MediaType.unsupported;

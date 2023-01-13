@@ -18,7 +18,7 @@ namespace SlideCat
 
         //private ArrayList mediaItems = new ArrayList();
         private MediaItems _mediaItems = new MediaItems();
-        private Presentation _presentation = new Presentation();
+        private SlideCatPresentation _presentation = new SlideCatPresentation();
         private int _percentage = 0;
         
 

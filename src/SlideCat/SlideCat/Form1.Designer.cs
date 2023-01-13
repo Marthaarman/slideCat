@@ -38,8 +38,8 @@
             this.button_mediaItem_add = new System.Windows.Forms.Button();
             this.button_mediaItem_remove = new System.Windows.Forms.Button();
             this.comboBox_mediaItems = new System.Windows.Forms.ComboBox();
-            this.button_control_start = new System.Windows.Forms.Button();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.button_control_start = new System.Windows.Forms.Button();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.tableLayoutPanel_main.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
@@ -190,19 +190,6 @@
             this.comboBox_mediaItems.Size = new System.Drawing.Size(676, 523);
             this.comboBox_mediaItems.TabIndex = 1;
             // 
-            // button_control_start
-            // 
-            this.button_control_start.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.button_control_start.FlatAppearance.BorderSize = 0;
-            this.button_control_start.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.button_control_start.Location = new System.Drawing.Point(3, 3);
-            this.button_control_start.Name = "button_control_start";
-            this.button_control_start.Size = new System.Drawing.Size(194, 179);
-            this.button_control_start.TabIndex = 0;
-            this.button_control_start.Text = "Start";
-            this.button_control_start.UseVisualStyleBackColor = false;
-            this.button_control_start.Click += new System.EventHandler(this.button_control_start_Click);
-            // 
             // tableLayoutPanel1
             // 
             this.tableLayoutPanel1.ColumnCount = 1;
@@ -217,6 +204,19 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(200, 556);
             this.tableLayoutPanel1.TabIndex = 1;
+            // 
+            // button_control_start
+            // 
+            this.button_control_start.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            this.button_control_start.FlatAppearance.BorderSize = 0;
+            this.button_control_start.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.button_control_start.Location = new System.Drawing.Point(3, 3);
+            this.button_control_start.Name = "button_control_start";
+            this.button_control_start.Size = new System.Drawing.Size(194, 179);
+            this.button_control_start.TabIndex = 0;
+            this.button_control_start.Text = "Start";
+            this.button_control_start.UseVisualStyleBackColor = false;
+            this.button_control_start.Click += new System.EventHandler(this.button_control_start_Click);
             // 
             // progressBar
             // 
@@ -237,7 +237,6 @@
             this.Name = "form_main";
             this.ShowIcon = false;
             this.Text = "SlideCat";
-            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.tableLayoutPanel_main.ResumeLayout(false);
             this.tableLayoutPanel2.ResumeLayout(false);
             this.groupBox_media_items.ResumeLayout(false);
