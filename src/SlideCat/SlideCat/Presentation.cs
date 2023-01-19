@@ -1,82 +1,67 @@
-﻿using Microsoft.Office.Core;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.ComponentModel;
-using System.Threading;
-using System.Threading.Tasks;
-using System.IO;
-using PowerPoint = Microsoft.Office.Interop.PowerPoint;
-using System.Windows.Forms;
 using System.Drawing;
-
-using DocumentFormat.OpenXml;
+using System.IO;
+using System.Linq;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Presentation;
 using DocumentFormat.OpenXml.Validation;
+using Microsoft.Office.Core;
+using Microsoft.Office.Interop.PowerPoint;
+using Presentation = Microsoft.Office.Interop.PowerPoint.Presentation;
+using Slide = Microsoft.Office.Interop.PowerPoint.Slide;
 
 namespace SlideCat
 {
     public class SlideCatPresentation
     {
+        private static uint uniqueId;
+
+        private Application _application;
         private int _currentSlideIndex;
 
-        static uint uniqueId;
-
-        private bool _isPlaying = false;
-
-        private PowerPoint.Application _application;
-        private PowerPoint.Presentation _presentation;
-
         private int _intervalCounter = 0;
-        private String _slideNotes = String.Empty;
-        private String _slideNotesNext = String.Empty;
 
-        public String slideNotes {  get { return this._slideNotes; } }
-        public String slideNotesNext { get { return this._slideNotesNext; } }
+        private readonly string _pptPath = "";
+        private Presentation _presentation;
 
-        public bool IsPlaying { get { return _isPlaying; } }
-
-        private string _pptPath = System.IO.Path.GetTempPath() + "slidecat\\";
-
-        private bool _stopping = false;
-        public bool stopping { get { return _stopping; } }
+        private readonly string _slideCatPath = Path.GetTempPath() + "slidecat\\";
 
         public SlideCatPresentation()
         {
-            if(!Directory.Exists(this._pptPath))
-            {
-                Directory.CreateDirectory(this._pptPath);
-            }
-            this._pptPath += new Random().Next() + "/";
+            Console.WriteLine(_slideCatPath);
+            if (!Directory.Exists(_slideCatPath)) Directory.CreateDirectory(_slideCatPath);
+            _pptPath = _slideCatPath + new Random().Next() + "\\";
 
-            if(!Directory.Exists(_pptPath))
-            {
-                Directory.CreateDirectory(this._pptPath);
-            }
+            if (!Directory.Exists(_pptPath)) Directory.CreateDirectory(_pptPath);
         }
+
+        public string slideNotes { get; } = string.Empty;
+
+        public string slideNotesNext { get; } = string.Empty;
+
+        public bool IsPlaying { get; private set; }
+
+        public bool stopping { get; private set; }
 
         private void _emptyPresentationDirectory()
         {
-            if(!this._isPlaying)
+            if (!IsPlaying)
             {
-
-                System.IO.DirectoryInfo di = new DirectoryInfo(this._pptPath);
+                DirectoryInfo di = new DirectoryInfo(_pptPath);
 
                 foreach (FileInfo file in di.GetFiles())
-                {
                     try
                     {
                         file.Delete();
                     }
                     catch (Exception ex)
-                    { 
+                    {
                         Console.WriteLine(ex.Message);
-                    } 
-                }
+                    }
+
                 foreach (DirectoryInfo dir in di.GetDirectories())
-                {
                     try
                     {
                         dir.Delete(true);
@@ -85,32 +70,31 @@ namespace SlideCat
                     {
                         Console.WriteLine(ex.Message);
                     }
-                }
             }
-            
         }
 
         public void createPresentation(MediaItems mediaItems, ref BackgroundWorker worker)
         {
             //  the destination powerpoint
-            String _destinationPowerPoint = "destinationPowerPoint.pptx";
+            string _destinationPowerPoint = "destinationPowerPoint.pptx";
 
             //  clear the folder to which temporary files are stored
-            this._emptyPresentationDirectory();
+            _emptyPresentationDirectory();
 
             //  initiate new application and main presentation
 
-            PowerPoint.Application powerPointApplication = new PowerPoint.Application();
-            PowerPoint.Presentation powerPointPresentation = powerPointApplication.Presentations.Add(MsoTriState.msoFalse);
+            Application powerPointApplication = new Application();
+            Presentation powerPointPresentation = powerPointApplication.Presentations.Add(MsoTriState.msoFalse);
 
             //  insert first slide, make black
-            PowerPoint.CustomLayout customLayout = powerPointPresentation.SlideMaster.CustomLayouts[PowerPoint.PpSlideLayout.ppLayoutTitle];
-            PowerPoint.Slide slide = powerPointPresentation.Slides.AddSlide(1, customLayout);
+            CustomLayout customLayout = powerPointPresentation.SlideMaster.CustomLayouts[PpSlideLayout.ppLayoutTitle];
+            Slide slide = powerPointPresentation.Slides.AddSlide(1, customLayout);
             Color slideBGColor = Color.Black;
             slide.FollowMasterBackground = MsoTriState.msoFalse;
             slide.Background.Fill.ForeColor.RGB = slideBGColor.ToArgb();
-            powerPointPresentation.SaveCopyAs(this._pptPath + "destinationPowerPoint", PowerPoint.PpSaveAsFileType.ppSaveAsDefault, MsoTriState.msoTrue);
-            powerPointPresentation.Close();       
+            powerPointPresentation.SaveCopyAs(_pptPath + "destinationPowerPoint", PpSaveAsFileType.ppSaveAsDefault,
+                MsoTriState.msoTrue);
+            powerPointPresentation.Close();
 
             //  save each presentation as powerpoint presentation into the tmp folder
             //  add each temporary powerpoint into the main powerpoint
@@ -123,72 +107,70 @@ namespace SlideCat
                 i++;
 
                 //  report progress to the backgroundworker
-                double percentageDouble = (i * 100) / (nrItems + 1);
+                double percentageDouble = i * 100 / (nrItems + 1);
                 percentageDouble = Math.Round(percentageDouble);
                 int percentageInt = (int)percentageDouble;
                 worker.ReportProgress(percentageInt);
 
                 //  store each powerpoint to a file
-                PowerPoint.Presentation pres = mediaItem.presentation;
-                pres.SaveCopyAs(this._pptPath + "temporary_pptx_" + i, PowerPoint.PpSaveAsFileType.ppSaveAsDefault, MsoTriState.msoTrue);
+                Presentation pres = mediaItem.presentation;
+                pres.SaveCopyAs(_pptPath + "temporary_pptx_" + i, PpSaveAsFileType.ppSaveAsDefault,
+                    MsoTriState.msoTrue);
                 pres.Close();
 
                 //  merge into the destination powerpoint
-                MergeSlides(this._pptPath, "temporary_pptx_" + i + ".pptx", _destinationPowerPoint);
+                MergeSlides(_pptPath, "temporary_pptx_" + i + ".pptx", _destinationPowerPoint);
 
                 //  delete temporary powerpoint
-                File.Delete(this._pptPath + "temporary_pptx_" + i + ".pptx");
+                File.Delete(_pptPath + "temporary_pptx_" + i + ".pptx");
             }
 
-            this._application = new PowerPoint.Application();
-            this._presentation = _application.Presentations.Open2007(this._pptPath + _destinationPowerPoint, Microsoft.Office.Core.MsoTriState.msoTrue, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoTrue);
+            _application = new Application();
+            _presentation = _application.Presentations.Open2007(_pptPath + _destinationPowerPoint, MsoTriState.msoTrue,
+                MsoTriState.msoFalse, MsoTriState.msoFalse, MsoTriState.msoTrue);
         }
 
         public void playPresentation()
         {
-            this._isPlaying = false;
+            IsPlaying = false;
 
             //  must have at least one slide to continue
-            if (!(this._presentation.Slides.Count > 0))
-            {
-                return;
-            }
+            if (!(_presentation.Slides.Count > 0)) return;
 
             //  load the powerpoint in preview mode and run
-            PowerPoint.SlideShowSettings settings = this._presentation.SlideShowSettings;
-            settings.ShowType = (PowerPoint.PpSlideShowType)1;
+            SlideShowSettings settings = _presentation.SlideShowSettings;
+            settings.ShowType = (PpSlideShowType)1;
             settings.ShowPresenterView = MsoTriState.msoTrue;
-            PowerPoint.SlideShowWindow sw = settings.Run();
+            SlideShowWindow sw = settings.Run();
 
             //  go to first slide
-            this._presentation.SlideShowWindow.View.GotoSlide(1);
-            this._presentation.SlideShowWindow.View.FirstAnimationIsAutomatic();
-            this._stopping = false;
+            _presentation.SlideShowWindow.View.GotoSlide(1);
+            _presentation.SlideShowWindow.View.FirstAnimationIsAutomatic();
+            stopping = false;
 
             //  add handler for when stopping
-            this._application.PresentationBeforeClose += delegate
+            _application.PresentationBeforeClose += delegate
             {
-                this._stopping = true;
-                this._isPlaying = false;
+                stopping = true;
+                IsPlaying = false;
             };
 
             //  set status to playing
-            this._isPlaying = true;
+            IsPlaying = true;
         }
 
         public void stopPresentation()
         {
-            if (this._presentationPlaying())
+            if (_presentationPlaying())
             {
-                this._isPlaying = false;
-                this._stopPresentation(this._presentation);
+                IsPlaying = false;
+                _stopPresentation(_presentation);
             }
         }
 
-        private void _stopPresentation(PowerPoint.Presentation _presentation)
+        private void _stopPresentation(Presentation _presentation)
         {
-            if (this._presentationPlaying())
-            {
+            if (_presentationPlaying())
                 try
                 {
                     _presentation.Close();
@@ -198,43 +180,41 @@ namespace SlideCat
                     Console.WriteLine("LOG - Presentation.cs - _stopPresentation() - catch");
                     Console.WriteLine(ex.Message);
                 }
+        }
+
+
+        public void stop()
+        {
+            if (_presentationPlaying())
+            {
+                stopPresentation();
+                _emptyPresentationDirectory();
             }
         }
-        
-       
-        
-       public void stop()
-        {
-            if(this._presentationPlaying())
-            {
-                this.stopPresentation();
-                this._emptyPresentationDirectory();
-            }
-        }      
 
         private bool _presentationPlaying()
         {
             try
             {
-                int tmp = this._presentation.Slides.Count;
-                return this._isPlaying;
-                
-            }catch
+                int tmp = _presentation.Slides.Count;
+                return IsPlaying;
+            }
+            catch
             {
                 return false;
             }
         }
 
 
-
-        static void MergeSlides(string presentationFolder, string sourcePresentation, string destPresentation)
+        private static void MergeSlides(string presentationFolder, string sourcePresentation, string destPresentation)
         {
             int id = 0;
             Console.WriteLine(presentationFolder);
             Console.WriteLine(sourcePresentation);
             Console.WriteLine(destPresentation);
             // Open the destination presentation.
-            using (PresentationDocument myDestDeck = PresentationDocument.Open(presentationFolder + destPresentation, true))
+            using (PresentationDocument myDestDeck =
+                   PresentationDocument.Open(presentationFolder + destPresentation, true))
             {
                 PresentationPart destPresPart = myDestDeck.PresentationPart;
 
@@ -246,23 +226,23 @@ namespace SlideCat
                 // Open the source presentation. This will throw an exception if
                 // the source presentation does not exist.
                 using (PresentationDocument mySourceDeck =
-                  PresentationDocument.Open(
-                    presentationFolder + sourcePresentation, false))
+                       PresentationDocument.Open(
+                           presentationFolder + sourcePresentation, false))
                 {
                     PresentationPart sourcePresPart =
-                      mySourceDeck.PresentationPart;
+                        mySourceDeck.PresentationPart;
 
                     // Get unique ids for the slide master and slide lists
                     // for use later.
                     uniqueId =
-                      GetMaxSlideMasterId(destPresPart.Presentation.SlideMasterIdList);
+                        GetMaxSlideMasterId(destPresPart.Presentation.SlideMasterIdList);
 
                     uint maxSlideId = GetMaxSlideId(destPresPart.Presentation.SlideIdList);
 
                     // Copy each slide in the source presentation, in order, to 
                     // the destination presentation.
                     foreach (SlideId slideId in
-                      sourcePresPart.Presentation.SlideIdList)
+                             sourcePresPart.Presentation.SlideIdList)
                     {
                         SlidePart sp;
                         SlidePart destSp;
@@ -274,15 +254,15 @@ namespace SlideCat
                         // Create a unique relationship id.
                         id++;
                         sp =
-                          (SlidePart)sourcePresPart.GetPartById(
-                            slideId.RelationshipId);
+                            (SlidePart)sourcePresPart.GetPartById(
+                                slideId.RelationshipId);
 
                         relId =
-                          sourcePresentation.Remove(
-                            sourcePresentation.IndexOf('.')) + id;
+                            sourcePresentation.Remove(
+                                sourcePresentation.IndexOf('.')) + id;
 
                         // Add the slide part to the destination presentation.
-                        destSp = destPresPart.AddPart<SlidePart>(sp, relId);
+                        destSp = destPresPart.AddPart(sp, relId);
 
                         // The slide master part was added. Make sure the
                         // relationship between the main presentation part and
@@ -294,7 +274,7 @@ namespace SlideCat
                         uniqueId++;
                         newSlideMasterId = new SlideMasterId();
                         newSlideMasterId.RelationshipId =
-                          destPresPart.GetIdOfPart(destMasterPart);
+                            destPresPart.GetIdOfPart(destMasterPart);
                         newSlideMasterId.Id = uniqueId;
 
                         destPresPart.Presentation.SlideMasterIdList.Append(newSlideMasterId);
@@ -317,24 +297,24 @@ namespace SlideCat
             }
         }
 
-        static void FixSlideLayoutIds(PresentationPart presPart)
+        private static void FixSlideLayoutIds(PresentationPart presPart)
         {
             // Make sure that all slide layouts have unique ids.
             foreach (SlideMasterPart slideMasterPart in
-              presPart.SlideMasterParts)
+                     presPart.SlideMasterParts)
             {
                 foreach (SlideLayoutId slideLayoutId in
-                  slideMasterPart.SlideMaster.SlideLayoutIdList)
+                         slideMasterPart.SlideMaster.SlideLayoutIdList)
                 {
                     uniqueId++;
-                    slideLayoutId.Id = (uint)uniqueId;
+                    slideLayoutId.Id = uniqueId;
                 }
 
                 slideMasterPart.SlideMaster.Save();
             }
         }
 
-        static uint GetMaxSlideId(SlideIdList slideIdList)
+        private static uint GetMaxSlideId(SlideIdList slideIdList)
         {
             // Slide identifiers have a minimum value of greater than or
             // equal to 256 and a maximum value of less than 2147483648. 
@@ -353,7 +333,7 @@ namespace SlideCat
             return max;
         }
 
-        static uint GetMaxSlideMasterId(SlideMasterIdList slideMasterIdList)
+        private static uint GetMaxSlideMasterId(SlideMasterIdList slideMasterIdList)
         {
             // Slide master identifiers have a minimum value of greater than
             // or equal to 2147483648. 
@@ -362,7 +342,7 @@ namespace SlideCat
             if (slideMasterIdList != null)
                 // Get the maximum id value from the current set of children.
                 foreach (SlideMasterId child in
-                  slideMasterIdList.Elements<SlideMasterId>())
+                         slideMasterIdList.Elements<SlideMasterId>())
                 {
                     uint id = child.Id;
 
@@ -373,8 +353,8 @@ namespace SlideCat
             return max;
         }
 
-        static void DisplayValidationErrors(
-          IEnumerable<ValidationErrorInfo> errors)
+        private static void DisplayValidationErrors(
+            IEnumerable<ValidationErrorInfo> errors)
         {
             int errorIndex = 1;
 

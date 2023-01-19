@@ -1,63 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections;
+﻿using System.IO;
 using Microsoft.Office.Core;
-using PowerPoint = Microsoft.Office.Interop.PowerPoint;
-using System.IO;
+using Microsoft.Office.Interop.PowerPoint;
 
 namespace SlideCat
 {
     public class PPT
     {
-        protected PowerPoint.Slides _slides;
-        protected PowerPoint.Application _application;
-        protected PowerPoint.Presentation _presentation;
-        
-        private bool _pptValid = false;
-        protected string _pptPath = System.IO.Path.GetTempPath() + "slidecat\\";
-        
-        protected String _src = "";
-        protected String _name = "";
+        protected Application _application;
+        protected string _name = "";
+        protected string _powerPointPath = "";
+
+        private bool _pptValid;
+        protected Presentation _presentation;
+        protected string _slideCatPath = Path.GetTempPath() + "slidecat\\";
+        protected Slides _slides;
+
+        protected string _src = "";
 
         public PPT()
         {
-            if (!Directory.Exists(_pptPath))
-            {
-                Directory.CreateDirectory(this._pptPath);
-            }
+            if (!Directory.Exists(_slideCatPath)) Directory.CreateDirectory(_slideCatPath);
         }
-        
-        virtual public int nrSlides {  get { return this._pptValid ? _presentation.Slides.Count : 0; } }
 
-        virtual public void Load(String file = null)
+        public virtual int nrSlides => _pptValid ? _presentation.Slides.Count : 0;
+
+        public virtual void Load(string file = null)
         {
-            if (file == null)
-            {
-                return;
-            }
-            this._src = file;
-            this._application = new PowerPoint.Application();
-            this._presentation = _application.Presentations.Open2007(this._src, Microsoft.Office.Core.MsoTriState.msoTrue, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoTrue);
-            this._pptValid = true;
+            if (file == null) return;
+            _src = file;
+            _application = new Application();
+            _presentation = _application.Presentations.Open2007(_src, MsoTriState.msoTrue, MsoTriState.msoFalse,
+                MsoTriState.msoFalse, MsoTriState.msoTrue);
+            _pptValid = true;
             //  used to add one safetyslide into the back
             //PowerPoint.SlideRange dupliSlide = this._presentation.Slides[this._presentation.Slides.Count].Duplicate();
             //dupliSlide.MoveTo(this._presentation.Slides.Count);
         }
 
-        virtual public void createPresentation() {}
-
-        virtual public PowerPoint.Presentation getPresentation()
+        public virtual void createPresentation()
         {
-            return this._presentation;
         }
 
-        virtual public void exitPresentation()
+        public virtual Presentation getPresentation()
         {
-
+            return _presentation;
         }
 
+        public virtual void exitPresentation()
+        {
+        }
     }
 }
