@@ -1,19 +1,20 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows.Forms;
+using DocumentFormat.OpenXml.Office2010.Excel;
+using Microsoft.Office.Interop.PowerPoint;
+using Color = System.Drawing.Color;
 
 namespace SlideCat
 {
     public partial class form_main : Form
     {
-        //private ArrayList mediaItems = new ArrayList();
-        private readonly MediaItems _mediaItems = new MediaItems();
-        private int _percentage = 0;
-        private readonly SlideCatPresentation _presentation = new SlideCatPresentation();
+        //private ArrayList ItemManager = new ArrayList();
+        private readonly ItemManager _mItemManager = new ItemManager();
+        private readonly SlideCatPresentation _mPresentation = new SlideCatPresentation();
 
-
-        private BackgroundWorker backgroundWorker_createPresentation;
-        private BackgroundWorker backgroundWorker_statusPresentation;
+        private BackgroundWorker _mBackgroundWorkerCreatePresentation;
+        private BackgroundWorker _mBackgroundWorkerStatusPresentation;
 
         public form_main()
         {
@@ -25,78 +26,76 @@ namespace SlideCat
 
         private void _formClosing(object sender, FormClosingEventArgs e)
         {
-            _presentation.stop();
+            _mPresentation.Stop();
         }
 
         private void InitializeBackgroundWorkers()
         {
-            backgroundWorker_createPresentation = new BackgroundWorker();
-            backgroundWorker_createPresentation.WorkerReportsProgress = true;
-            backgroundWorker_createPresentation.DoWork += backgroundWorker_createPresentation_DoWork;
-            backgroundWorker_createPresentation.RunWorkerCompleted +=
-                backgroundWorker_createPresentation_RunWorkerCompleted;
-            backgroundWorker_createPresentation.ProgressChanged += backgroundWorker_createPresentation_ProgressChanged;
+            _mBackgroundWorkerCreatePresentation = new BackgroundWorker();
+            _mBackgroundWorkerCreatePresentation.WorkerReportsProgress = true;
+            _mBackgroundWorkerCreatePresentation.DoWork += BackgroundWorkerCreatePresentationDoWork;
+            _mBackgroundWorkerCreatePresentation.RunWorkerCompleted +=
+                BackgroundWorkerCreatePresentationRunWorkerCompleted;
+            _mBackgroundWorkerCreatePresentation.ProgressChanged += BackgroundWorkerCreatePresentationProgressChanged;
 
 
-            backgroundWorker_statusPresentation = new BackgroundWorker();
-            backgroundWorker_statusPresentation.DoWork += backgroundWorker_statusPresentation_DoWork;
-            backgroundWorker_statusPresentation.RunWorkerCompleted +=
-                backgroundWorker_statusPresentation_RunWorkerCompleted;
+            _mBackgroundWorkerStatusPresentation = new BackgroundWorker();
+            _mBackgroundWorkerStatusPresentation.DoWork += BackgroundWorkerStatusPresentationDoWork;
+            _mBackgroundWorkerStatusPresentation.RunWorkerCompleted +=
+                BackgroundWorkerStatusPresentationRunWorkerCompleted;
         }
 
-        private void backgroundWorker_createPresentation_DoWork(object sender, DoWorkEventArgs e)
+        private void BackgroundWorkerCreatePresentationDoWork(object sender, DoWorkEventArgs e)
         {
-            var worker = sender as BackgroundWorker;
-            _presentation.createPresentation(_mediaItems, ref worker);
+            BackgroundWorker worker = sender as BackgroundWorker;
+            _mPresentation.CreatePresentation(_mItemManager, ref worker);
         }
 
-        private void backgroundWorker_createPresentation_RunWorkerCompleted(object sender,
+        private void BackgroundWorkerCreatePresentationRunWorkerCompleted(object sender,
             RunWorkerCompletedEventArgs e)
         {
             // First, handle the case where an exception was thrown.
             if (e.Error != null) MessageBox.Show(e.Error.Message);
             progressBar.Value = 100;
-            _presentation.playPresentation();
-            backgroundWorker_statusPresentation.RunWorkerAsync();
+            _mPresentation.PlayPresentation();
+            _mBackgroundWorkerStatusPresentation.RunWorkerAsync();
             progressBar.Visible = false;
         }
 
 
-        private void backgroundWorker_createPresentation_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        private void BackgroundWorkerCreatePresentationProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            var worker = sender as BackgroundWorker;
-            var percentage = e.ProgressPercentage;
+            int percentage = e.ProgressPercentage;
             progressBar.Value = percentage;
         }
 
-        private void backgroundWorker_statusPresentation_DoWork(object sender, DoWorkEventArgs e)
+        private void BackgroundWorkerStatusPresentationDoWork(object sender, DoWorkEventArgs e)
         {
-            while (true)
-                if (!_presentation.IsPlaying)
-                    break;
+            while (!_mPresentation.mIsPlaying)
+            {
+            }
         }
 
-        private void backgroundWorker_statusPresentation_RunWorkerCompleted(object sender,
+        private void BackgroundWorkerStatusPresentationRunWorkerCompleted(object sender,
             RunWorkerCompletedEventArgs e)
         {
             // First, handle the case where an exception was thrown.
             if (e.Error != null) MessageBox.Show(e.Error.Message);
-            _presentationStopped();
+            _PresentationStopped();
         }
 
         private void button_mediaItem_add_click(object sender, EventArgs e)
         {
             /*SOURCE: https://docs.microsoft.com/en-us/dotnet/api/system.windows.forms.openfiledialog?view=windowsdesktop-6.0*/
             //  Variables the file info is stored to
-            var fileContent = string.Empty;
-            var filePath = string.Empty;
+            string filePath = string.Empty;
 
             //  set image thumb sizes
             //setImageListSize();
             Cursor = Cursors.WaitCursor;
 
             //  setup dialog
-            using (var openFileDialog = new OpenFileDialog())
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
                 //  File type filter
                 openFileDialog.InitialDirectory = "c:\\";
@@ -112,76 +111,40 @@ namespace SlideCat
             //  process file
             if (filePath != string.Empty)
             {
-                _mediaItems.addFile(filePath);
-                reloadMediaItems();
+                _mItemManager.AddFile(filePath);
+                ReloadMediaItems();
             }
 
             Cursor = Cursors.Default;
         }
 
 
-        private void reloadMediaItems()
+        private void ReloadMediaItems()
         {
             comboBox_mediaItems.Items.Clear();
-            foreach (MediaItem item in _mediaItems.mediaItems) comboBox_mediaItems.Items.Add(item.name);
-        }
-
-        private void button_mediaItem_moveUp_Click(object sender, EventArgs e)
-        {
-            var _selected_index = comboBox_mediaItems.SelectedIndex;
-            _mediaItems.moveMediaItem(_selected_index, -1);
-            reloadMediaItems();
-            comboBox_mediaItems.SelectedIndex = _selected_index - 1;
-        }
-
-        private void button_mediaItem_moveDown_Click(object sender, EventArgs e)
-        {
-            var _selected_index = comboBox_mediaItems.SelectedIndex;
-            _mediaItems.moveMediaItem(_selected_index, 1);
-            reloadMediaItems();
-            comboBox_mediaItems.SelectedIndex = _selected_index + 1;
-        }
-
-        private void button_mediaItem_remove_Click(object sender, EventArgs e)
-        {
-            var _selected_index = comboBox_mediaItems.SelectedIndex;
-            _mediaItems.removeMediaItem(_selected_index);
-            reloadMediaItems();
-            if (comboBox_mediaItems.Items.Count > 0) comboBox_mediaItems.SelectedIndex = 0;
-        }
-
-        private void button_control_start_Click(object sender, EventArgs e)
-        {
-            if (_presentation.IsPlaying == false)
+            foreach (MediaItem item in _mItemManager.mMediaItems) comboBox_mediaItems.Items.Add(item.name);
+            if (_mItemManager.mMediaItems.Count > 0)
             {
-                var _selected_index = comboBox_mediaItems.SelectedIndex;
-                if (_selected_index < 0) _selected_index = 0;
-
-                if (comboBox_mediaItems.Items.Count > 0)
-                {
-                    Cursor = Cursors.WaitCursor;
-
-                    button_control_start.Text = "Processing, please wait.";
-                    button_control_start.Enabled = false;
-                    progressBar.Visible = true;
-                    progressBar.Value = 0;
-                    backgroundWorker_createPresentation.RunWorkerAsync();
-                    _setControlsStateStart();
-                }
-
-                Cursor = Cursors.Default;
+                button_control_start.BackColor = Color.ForestGreen;
+                button_control_start.Enabled = true;
+            }
+            else
+            {
+                button_control_start.BackColor = Color.Salmon;
+                button_control_start.Enabled = false;
             }
         }
 
-        private void _presentationStopped()
+        private void _PresentationStopped()
         {
-            _setControlsStateSstop();
+            _SetControlsStateStop();
         }
 
 
-        private void _setControlsStateStart()
+        private void _SetControlsStateStart()
         {
             button_control_start.Text = "Started, press [esc] to stop";
+            button_control_start.BackColor = Color.Salmon;
             button_control_start.Enabled = false;
             button_mediaItem_add.Enabled = false;
             button_mediaItem_remove.Enabled = false;
@@ -189,14 +152,59 @@ namespace SlideCat
             button_mediaItem_moveUp.Enabled = false;
         }
 
-        private void _setControlsStateSstop()
+        private void _SetControlsStateStop()
         {
             button_control_start.Text = "Start";
             button_control_start.Enabled = true;
+            button_control_start.BackColor = Color.ForestGreen;
             button_mediaItem_add.Enabled = true;
             button_mediaItem_remove.Enabled = true;
             button_mediaItem_moveDown.Enabled = true;
             button_mediaItem_moveUp.Enabled = true;
         }
+        private void button_mediaItem_moveUp_Click(object sender, EventArgs e)
+        {
+            int selectedIndex = comboBox_mediaItems.SelectedIndex;
+            _mItemManager.MoveMediaItem(selectedIndex, -1);
+            ReloadMediaItems();
+            comboBox_mediaItems.SelectedIndex = selectedIndex - 1;
+        }
+
+        private void button_mediaItem_moveDown_Click(object sender, EventArgs e)
+        {
+            int selectedIndex = comboBox_mediaItems.SelectedIndex;
+            _mItemManager.MoveMediaItem(selectedIndex, 1);
+            ReloadMediaItems();
+            comboBox_mediaItems.SelectedIndex = selectedIndex + 1;
+        }
+
+        private void button_mediaItem_remove_Click(object sender, EventArgs e)
+        {
+            int selectedIndex = comboBox_mediaItems.SelectedIndex;
+            _mItemManager.RemoveMediaItem(selectedIndex);
+            ReloadMediaItems();
+            if (comboBox_mediaItems.Items.Count > 0) comboBox_mediaItems.SelectedIndex = 0;
+        }
+
+        private void button_control_start_Click(object sender, EventArgs e)
+        {
+            if (_mPresentation.mIsPlaying) return;
+            if (comboBox_mediaItems.Items.Count > 0)
+            {
+                Cursor = Cursors.WaitCursor;
+
+                button_control_start.Text = "Processing, please wait.";
+                button_control_start.Enabled = false;
+                button_control_start.BackColor = Color.Salmon;
+                progressBar.Visible = true;
+                progressBar.Value = 0;
+                _mBackgroundWorkerCreatePresentation.RunWorkerAsync();
+                _SetControlsStateStart();
+            }
+
+            Cursor = Cursors.Default;
+            
+        }
+
     }
 }

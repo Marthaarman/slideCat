@@ -107,20 +107,19 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PPTPdf.cs" />
-    <Compile Include="SlideNotes.cs" />
-    <Compile Include="PPTImage.cs" />
-    <Compile Include="PPTVideo.cs" />
-    <Compile Include="PPT.cs" />
-    <Compile Include="Presentation.cs" />
+    <Compile Include="PowerPointFiles\PPTPdf.cs" />
+    <Compile Include="PowerPointFiles\PPTImage.cs" />
+    <Compile Include="PowerPointFiles\PPTVideo.cs" />
+    <Compile Include="PowerPointFiles\PPT.cs" />
+    <Compile Include="PresentationHandler.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="MediaItem.cs" />
-    <Compile Include="MediaItems.cs" />
+    <Compile Include="MediaItems\MediaItem.cs" />
+    <Compile Include="MediaItems\MediaItems.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
@@ -162,6 +161,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
