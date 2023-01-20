@@ -156,7 +156,7 @@ namespace SlideCat
 
             //  go to first slide
             _mPresentation.SlideShowWindow.View.GotoSlide(1);
-            /*_mPresentation.SlideShowWindow.View.FirstAnimationIsAutomatic();*/
+            _mPresentation.SlideShowWindow.View.FirstAnimationIsAutomatic();
             
             mStopping = false;
 

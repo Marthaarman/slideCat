@@ -27,12 +27,13 @@ namespace SlideCat
 
             slide.FollowMasterBackground = MsoTriState.msoFalse;
             slide.Background.Fill.ForeColor.RGB = 0;
+            
 
-            SlideShowSettings settings = mPresentation.SlideShowSettings;
+            /*SlideShowSettings settings = mPresentation.SlideShowSettings;
             settings.ShowType = PpSlideShowType.ppShowTypeSpeaker;
             settings.ShowPresenterView = MsoTriState.msoFalse;
             SlideShowWindow sw = settings.Run();
-            mPresentation.SlideShowWindow.View.FirstAnimationIsAutomatic();
+            mPresentation.SlideShowWindow.View.FirstAnimationIsAutomatic();*/
         }
 
         public override Presentation GetPresentation()
