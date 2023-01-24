@@ -16,12 +16,35 @@ namespace SlideCat
         private BackgroundWorker _mBackgroundWorkerCreatePresentation;
         private BackgroundWorker _mBackgroundWorkerStatusPresentation;
 
+        
+
         public form_main()
         {
             InitializeComponent();
             InitializeBackgroundWorkers();
+
             FormClosing += _formClosing;
             progressBar.Visible = false;
+
+            
+            _CheckPresenterView();
+            checkBox_presenterview.CheckStateChanged += _ChangePresenterView;
+        }
+
+        private void _CheckPresenterView()
+        {
+            Screen[] screens = Screen.AllScreens;
+            if (screens.Length <= 1)
+            {
+                checkBox_presenterview.Checked = false;
+                checkBox_presenterview.Enabled = false;
+                _mPresentation.PresenterView(false);
+            }
+        }
+
+        private void _ChangePresenterView(object sender, EventArgs e)
+        {
+            _mPresentation.PresenterView(checkBox_presenterview.Checked);
         }
 
         private void _formClosing(object sender, FormClosingEventArgs e)

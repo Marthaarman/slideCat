@@ -26,6 +26,8 @@ namespace SlideCat
         private Application _mApplication;
         private Presentation _mPresentation;
 
+        private bool _mPresenterView = true;
+
         public SlideCatPresentation()
         {
             Console.WriteLine(_mSlideCatPath);
@@ -33,6 +35,11 @@ namespace SlideCat
             _mPptPath = _mSlideCatPath + new Random().Next() + "\\";
 
             if (!Directory.Exists(_mPptPath)) Directory.CreateDirectory(_mPptPath);
+        }
+
+        public void PresenterView(bool enabled)
+        {
+            _mPresenterView = enabled;
         }
 
         public bool mIsPlaying { get; private set; }
@@ -151,7 +158,7 @@ namespace SlideCat
             //  load the powerpoint in preview mode and run
             SlideShowSettings settings = _mPresentation.SlideShowSettings;
             settings.ShowType = (PpSlideShowType)1;
-            settings.ShowPresenterView = MsoTriState.msoTrue;
+            settings.ShowPresenterView = _mPresenterView ? MsoTriState.msoTrue : MsoTriState.msoFalse;
             SlideShowWindow sw = settings.Run();
 
             //  go to first slide

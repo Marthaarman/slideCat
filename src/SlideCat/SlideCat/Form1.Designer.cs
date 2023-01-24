@@ -40,6 +40,8 @@
             this.comboBox_mediaItems = new System.Windows.Forms.ComboBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.button_control_start = new System.Windows.Forms.Button();
+            this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
+            this.checkBox_presenterview = new System.Windows.Forms.CheckBox();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.label_version = new System.Windows.Forms.Label();
             this.tableLayoutPanel_main.SuspendLayout();
@@ -48,6 +50,7 @@
             this.tableLayoutPanel3.SuspendLayout();
             this.tableLayoutPanel5.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
+            this.tableLayoutPanel4.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableLayoutPanel_main
@@ -207,6 +210,7 @@
             this.tableLayoutPanel1.ColumnCount = 1;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.Controls.Add(this.button_control_start, 0, 0);
+            this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel4, 0, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(882, 3);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -232,6 +236,37 @@
             this.button_control_start.UseVisualStyleBackColor = false;
             this.button_control_start.Click += new System.EventHandler(this.button_control_start_Click);
             // 
+            // tableLayoutPanel4
+            // 
+            this.tableLayoutPanel4.ColumnCount = 1;
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel4.Controls.Add(this.checkBox_presenterview, 0, 3);
+            this.tableLayoutPanel4.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel4.Location = new System.Drawing.Point(3, 191);
+            this.tableLayoutPanel4.Name = "tableLayoutPanel4";
+            this.tableLayoutPanel4.RowCount = 4;
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel4.Size = new System.Drawing.Size(208, 182);
+            this.tableLayoutPanel4.TabIndex = 1;
+            // 
+            // checkBox_presenterview
+            // 
+            this.checkBox_presenterview.AutoSize = true;
+            this.checkBox_presenterview.Checked = true;
+            this.checkBox_presenterview.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox_presenterview.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.checkBox_presenterview.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.checkBox_presenterview.Location = new System.Drawing.Point(3, 138);
+            this.checkBox_presenterview.Name = "checkBox_presenterview";
+            this.checkBox_presenterview.Size = new System.Drawing.Size(202, 41);
+            this.checkBox_presenterview.TabIndex = 1;
+            this.checkBox_presenterview.Text = "Presenter View";
+            this.checkBox_presenterview.UseVisualStyleBackColor = true;
+            // 
             // progressBar
             // 
             this.progressBar.BackColor = System.Drawing.Color.DarkGray;
@@ -251,7 +286,7 @@
             this.label_version.Name = "label_version";
             this.label_version.Size = new System.Drawing.Size(214, 50);
             this.label_version.TabIndex = 3;
-            this.label_version.Text = "github.com/Marthaarman/slidecat\r\nVersion: 1.0.0";
+            this.label_version.Text = "github.com/Marthaarman/slidecat\r\nVersion: 1.0.1";
             this.label_version.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // form_main
@@ -273,6 +308,8 @@
             this.tableLayoutPanel3.ResumeLayout(false);
             this.tableLayoutPanel5.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
+            this.tableLayoutPanel4.ResumeLayout(false);
+            this.tableLayoutPanel4.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -293,6 +330,8 @@
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.ProgressBar progressBar;
         private System.Windows.Forms.Label label_version;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel4;
+        private System.Windows.Forms.CheckBox checkBox_presenterview;
     }
 }
 
