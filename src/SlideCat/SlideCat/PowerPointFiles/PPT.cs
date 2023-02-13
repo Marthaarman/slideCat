@@ -21,6 +21,7 @@ namespace SlideCat
 
         public virtual int nrSlides => _mPptValid ? mPresentation.Slides.Count : 0;
 
+
         public virtual void Load(string file = null)
         {
             if (file == null) return;

@@ -109,12 +109,13 @@ namespace SlideCat
 
         private void button_mediaItem_add_click(object sender, EventArgs e)
         {
-            /*SOURCE: https://docs.microsoft.com/en-us/dotnet/api/system.windows.forms.openfiledialog?view=windowsdesktop-6.0*/
-            //  Variables the file info is stored to
-            string filePath = string.Empty;
+            /*SOURCES:
+             https://docs.microsoft.com/en-us/dotnet/api/system.windows.forms.openfiledialog?view=windowsdesktop-6.0
+            https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.openfiledialog.multiselect
+            */
 
-            //  set image thumb sizes
-            //setImageListSize();
+
+            //  set cursor to loading
             Cursor = Cursors.WaitCursor;
 
             //  setup dialog
@@ -123,21 +124,29 @@ namespace SlideCat
                 //  File type filter
                 openFileDialog.InitialDirectory = "c:\\";
                 openFileDialog.RestoreDirectory = false;
+                openFileDialog.Multiselect = true;
 
                 //  open the dialog and if result found
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
-                    //Get the path of specified file
-                    filePath = openFileDialog.FileName;
-            }
-            /* END SOURCE */
+                {
+                    //  make sure cursor is in loading again
+                    Cursor = Cursors.WaitCursor;
 
-            //  process file
-            if (filePath != string.Empty)
-            {
-                _mItemManager.AddFile(filePath);
-                ReloadMediaItems();
+                    //  iterate over all selected files
+                    foreach (string file in openFileDialog.FileNames)
+                    {
+                        if (file != string.Empty)
+                        {
+                            _mItemManager.AddFile(file);
+                        }
+                    }
+                }
             }
 
+            //  reload the list with items
+            ReloadMediaItems();
+
+            //  set cursor back to original state
             Cursor = Cursors.Default;
         }
 

@@ -9,101 +9,101 @@ namespace SlideCat
     {
         private readonly int _id;
 
+        private readonly string _mSrc = string.Empty;
+        private readonly string _mName = string.Empty;
+
+        private readonly MediaType _mMediaType = MediaType.unsupported;
+
+        private PPT _mPpt;
+        private int _mOrder = 0;
+
         public MediaItem(string src, int order)
         {
-            if (File.Exists(src))
+            if (!File.Exists(src))
             {
-                this.src = src;
-                this.order = order;
-                name = Path.GetFileName(src);
-                _id = new Random().Next(1, 1000);
-
-                PPT ppt = new PPT();
-
-                switch (Path.GetExtension(src))
-                {
-                    case ".pptx":
-                    case ".ppt":
-                        type = MediaType.powerpoint;
-                        ppt = new PPT();
-                        break;
-                    case ".mov":
-                    case ".mp4":
-                    case ".mp3":
-                    case ".avi":
-                        type = MediaType.video;
-                        ppt = new PPTVideo();
-
-                        break;
-                    case ".jpg":
-                    case ".jpeg":
-                    case ".JPEG":
-                    case ".JPG":
-                    case ".png":
-                    case ".gif":
-                        type = MediaType.image;
-                        ppt = new PPTImage();
-                        break;
-                    case ".pdf":
-                        //currently unsupported
-                        type = MediaType.pdf;
-                        ppt = new PPTPDF();
-                        break;
-                    default:
-                        type = MediaType.unsupported;
-                        break;
-                }
-
-                if (type != MediaType.unsupported)
-                {
-                    ppt.Load(src);
-                    ppt.CreatePresentation();
-                    presentation = ppt.GetPresentation();
-                    nrSlides = ppt.nrSlides;
-                }
+                return;
             }
-        }
+            
+            _mSrc = src;
+            _mOrder = order; 
+            _mName = Path.GetFileName(src);
+            _id = new Random().Next(1, 1000);
 
-        public Presentation presentation { get; }
-
-        public Slides slides => presentation.Slides;
-
-        public string name { get; }
-
-        public string src { get; }
-
-        public int order { get; set; }
-
-        public MediaType type { get; } = MediaType.unsupported;
-
-        public bool valid => type != MediaType.unsupported;
-
-        public int nrSlides { get; } = 1;
-
-
-        public void setThumbs()
-        {
-            if (type == MediaType.powerpoint)
+            switch (Path.GetExtension(src))
             {
-                string _path = Path.GetTempPath() + "SlideCat\\";
-                if (!Directory.Exists(_path)) Directory.CreateDirectory(_path);
-
-                _path += _id + "\\";
-                if (Directory.Exists(_path)) Directory.Delete(_path, true);
-                Directory.CreateDirectory(_path);
-
-                foreach (Slide slide in presentation.Slides)
-                {
-                    string src = _path + slide.SlideIndex + ".jpg";
-                    slide.Export(src, "jpg", 1080, 960);
-                }
+                case ".pptx":
+                case ".ppt":
+                    _mMediaType = MediaType.powerpoint;
+                    break;
+                case ".mov":
+                case ".mp4":
+                case ".mp3":
+                case ".avi":
+                    _mMediaType = MediaType.video;
+                    break;
+                case ".jpg":
+                case ".jpeg":
+                case ".JPEG":
+                case ".JPG":
+                case ".png":
+                case ".gif":
+                    _mMediaType = MediaType.image;
+                    break;
+                case ".pdf":
+                    _mMediaType = MediaType.pdf;
+                    break;
+                default:
+                    _mMediaType = MediaType.unsupported;
+                    break;
             }
+            
         }
 
-        public string getThumb(int _index)
+        public void Load()
         {
-            return Path.GetTempPath() + "SlideCat\\" + _id + "\\" + _index + ".jpg";
+            switch (_mMediaType)
+            {
+                case MediaType.video:
+                    _mPpt = new PPTVideo();
+                    break;
+                case MediaType.image:
+                    _mPpt = new PPTImage();
+                    break;
+                case MediaType.pdf:
+                    _mPpt = new PPTPDF();
+                    break;
+                case MediaType.powerpoint:
+                    _mPpt = new PPT();
+                    break;
+                case MediaType.unsupported:
+                default:
+                    _mPpt = null;
+                    break;
+            }
+
+            if (_mMediaType == MediaType.unsupported || _mPpt == null)
+            {
+                return;
+            }
+            
+            _mPpt.Load(_mSrc);
+            _mPpt.CreatePresentation();
+            
         }
+
+        public Presentation presentation => _mPpt.GetPresentation();
+
+        public string name => _mName;
+
+
+        public int order
+        {
+            get => _mOrder;
+            set => _mOrder = value;
+        }
+
+        public bool valid => _mMediaType != MediaType.unsupported;
+
     }
 
     public enum MediaType

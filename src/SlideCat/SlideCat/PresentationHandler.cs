@@ -30,7 +30,6 @@ namespace SlideCat
 
         public SlideCatPresentation()
         {
-            Console.WriteLine(_mSlideCatPath);
             if (!Directory.Exists(_mSlideCatPath)) Directory.CreateDirectory(_mSlideCatPath);
             _mPptPath = _mSlideCatPath + new Random().Next() + "\\";
 
@@ -67,7 +66,6 @@ namespace SlideCat
 
             foreach (DirectoryInfo dir in directoryInfo.GetDirectories())
             {
-                Console.WriteLine(dir.FullName);
                 try
                 {
                     dir.Delete(true);
@@ -88,10 +86,10 @@ namespace SlideCat
         public void CreatePresentation(ItemManager mediaItems, ref BackgroundWorker worker)
         {
             //  the destination powerpoint
-            string destinationPowerPointName = "destinationPowerPoint";
-            string destinationPowerPointExtension = "pptx";
-            string temporaryPowerPointName = "temporary_pptx_";
-            string temporaryPowerPointExtension = "pptx";
+            const string destinationPowerPointName = "destinationPowerPoint";
+            const string destinationPowerPointExtension = "pptx";
+            const string temporaryPowerPointName = "temporary_pptx_";
+            const string temporaryPowerPointExtension = "pptx";
 
             //  clear the folder to which temporary files are stored
             _EmptyPresentationDirectory();
@@ -126,10 +124,11 @@ namespace SlideCat
                 int percentageInt = (int)percentageDouble;
                 worker.ReportProgress(percentageInt);
 
+                //  load mediaItem
+                mediaItem.Load();
+
                 //  store each powerpoint to a file
-                Presentation pres = mediaItem.presentation;
-                pres.SaveCopyAs(_mPptPath + temporaryPowerPointName + i, PpSaveAsFileType.ppSaveAsDefault, MsoTriState.msoTrue);
-                pres.Close();
+                mediaItem.presentation.SaveCopyAs(_mPptPath + temporaryPowerPointName + i,PpSaveAsFileType.ppSaveAsDefault, MsoTriState.msoTrue);
 
                 //  merge into the destination powerpoint
                 MergeSlides(_mPptPath, temporaryPowerPointName + i + "." + temporaryPowerPointExtension, destinationPowerPointName+"."+destinationPowerPointExtension);
@@ -183,9 +182,8 @@ namespace SlideCat
                         processes[i].Kill();
                     }
                 }
-                
             };
-
+            
             //  set status to playing
             mIsPlaying = true;
         }
@@ -243,50 +241,47 @@ namespace SlideCat
         private static void MergeSlides(string presentationFolder, string sourcePresentation, string destPresentation)
         {
             int id = 0;
-            Console.WriteLine(presentationFolder);
-            Console.WriteLine(sourcePresentation);
-            Console.WriteLine(destPresentation);
             // Open the destination presentation.
-            using (PresentationDocument myDestDoc = PresentationDocument.Open(presentationFolder + destPresentation, true))
+            using (PresentationDocument myDestinationDocument = PresentationDocument.Open(presentationFolder + destPresentation, true))
             {
-                PresentationPart destPresPart = myDestDoc.PresentationPart;
-                if (destPresPart == null) return;
+                PresentationPart destinationPresentationPart = myDestinationDocument.PresentationPart;
+                if (destinationPresentationPart == null) return;
 
                 // If the merged presentation does not have a SlideIdList 
                 // element yet, add it.
-                if (destPresPart.Presentation.SlideIdList == null)
+                if (destinationPresentationPart.Presentation.SlideIdList == null)
                 {
-                    destPresPart.Presentation.SlideIdList = new SlideIdList();
+                    destinationPresentationPart.Presentation.SlideIdList = new SlideIdList();
                 }
                     
                 // Open the source presentation. This will throw an exception if
                 // the source presentation does not exist.
-                using (PresentationDocument mySourceDoc = PresentationDocument.Open(presentationFolder + sourcePresentation, false))
+                using (PresentationDocument mySourceDocument = PresentationDocument.Open(presentationFolder + sourcePresentation, false))
                 {
-                    PresentationPart sourcePresPart = mySourceDoc.PresentationPart;
-                    if (sourcePresPart == null) return;
-                    if (sourcePresPart.Presentation.SlideIdList == null) return;
+                    PresentationPart sourcePresentationPart = mySourceDocument.PresentationPart;
+                    if (sourcePresentationPart == null) return;
+                    if (sourcePresentationPart.Presentation.SlideIdList == null) return;
 
 
                     // Get unique ids for the slide master and slide lists
                     // for use later.
-                    _mUniqueId = GetMaxSlideMasterId(destPresPart.Presentation.SlideMasterIdList);
+                    _mUniqueId = GetMaxSlideMasterId(destinationPresentationPart.Presentation.SlideMasterIdList);
 
-                    uint maxSlideId = GetMaxSlideId(destPresPart.Presentation.SlideIdList);
+                    uint maxSlideId = GetMaxSlideId(destinationPresentationPart.Presentation.SlideIdList);
 
                     // Copy each slide in the source presentation, in order, to 
                     // the destination presentation.
-                    foreach (SlideId slideId in sourcePresPart.Presentation.SlideIdList)
+                    foreach (SlideId slideId in sourcePresentationPart.Presentation.SlideIdList)
                     {
                         // Create a unique relationship id.
                         id++;
                         if (slideId.RelationshipId == null) continue;
-                        SlidePart slidePart = (SlidePart)sourcePresPart.GetPartById(slideId.RelationshipId);
+                        SlidePart slidePart = (SlidePart)sourcePresentationPart.GetPartById(slideId.RelationshipId);
 
                         string relId = sourcePresentation.Remove(sourcePresentation.IndexOf('.')) + id;
 
                         // Add the slide part to the destination presentation.
-                        SlidePart destSlidePart = destPresPart.AddPart(slidePart, relId);
+                        SlidePart destSlidePart = destinationPresentationPart.AddPart(slidePart, relId);
 
                         // The slide master part was added. Make sure the
                         // relationship between the main presentation part and
@@ -295,18 +290,18 @@ namespace SlideCat
                         SlideMasterPart destMasterPart = destSlidePart.SlideLayoutPart.SlideMasterPart;
 
                         if (destMasterPart == null) continue;
-                        destPresPart.AddPart(destMasterPart);
+                        destinationPresentationPart.AddPart(destMasterPart);
 
                         // Add the slide master id to the slide master id list.
                         _mUniqueId++;
                         SlideMasterId newSlideMasterId = new SlideMasterId()
                         {
-                            RelationshipId = destPresPart.GetIdOfPart(destMasterPart),
+                            RelationshipId = destinationPresentationPart.GetIdOfPart(destMasterPart),
                             Id = _mUniqueId
                         };
 
-                        if (destPresPart.Presentation.SlideMasterIdList == null) continue;
-                        destPresPart.Presentation.SlideMasterIdList.Append(newSlideMasterId);
+                        if (destinationPresentationPart.Presentation.SlideMasterIdList == null) continue;
+                        destinationPresentationPart.Presentation.SlideMasterIdList.Append(newSlideMasterId);
 
                         // Add the slide id to the slide id list.
                         maxSlideId++;
@@ -316,15 +311,18 @@ namespace SlideCat
                             Id = maxSlideId
                         };
 
-                        destPresPart.Presentation.SlideIdList.Append(newSlideId);
+                        destinationPresentationPart.Presentation.SlideIdList.Append(newSlideId);
                     }
 
                     // Make sure that all slide layout ids are unique.
-                    FixSlideLayoutIds(destPresPart);
+                    FixSlideLayoutIds(destinationPresentationPart);
+
+                    //  close the source document for later use
+                    mySourceDocument.Close();
                 }
 
                 // Save the changes to the destination deck.
-                destPresPart.Presentation.Save();
+                destinationPresentationPart.Presentation.Save();
             }
         }
 

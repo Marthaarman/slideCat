@@ -286,7 +286,7 @@
             this.label_version.Name = "label_version";
             this.label_version.Size = new System.Drawing.Size(214, 50);
             this.label_version.TabIndex = 3;
-            this.label_version.Text = "github.com/Marthaarman/slidecat\r\nVersion: 1.0.1";
+            this.label_version.Text = "github.com/Marthaarman/slidecat\r\nVersion: 1.1.0";
             this.label_version.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // form_main
