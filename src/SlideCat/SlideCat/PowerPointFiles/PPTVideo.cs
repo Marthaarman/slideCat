@@ -21,6 +21,7 @@ namespace SlideCat
 
             Shape shape = slide.Shapes.AddMediaObject2(mSrc);
             shape.AnimationSettings.PlaySettings.PlayOnEntry = MsoTriState.msoTrue;
+            shape.AnimationSettings.PlaySettings.HideWhileNotPlaying = MsoTriState.msoTrue;
 
             shape.Left = mPresentation.PageSetup.SlideWidth * .5f - shape.Width / 2;
             shape.Top = mPresentation.PageSetup.SlideHeight * .5f - shape.Height / 2;
